@@ -54,7 +54,7 @@ class Arr
      */
     public static function whereNotNull(array $subject): array
     {
-        return self::filter($subject, fn($item) => $item !== null);
+        return self::filter($subject, fn ($item) => $item !== null);
     }
 
     /**
@@ -77,6 +77,23 @@ class Arr
         }
 
         return $result;
+    }
+
+    /**
+     * Gets a value, if set. Falls back to default otherwise.
+     *
+     * @param array $subject
+     * @param string $key
+     * @param null $default
+     * @return mixed
+     */
+    public static function get(array $subject, string $key, $default = null)
+    {
+        if (isset($subject[$key])) {
+            return $subject[$key];
+        }
+
+        return $default;
     }
 
     /**

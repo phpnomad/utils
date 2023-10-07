@@ -185,6 +185,32 @@ class Arr
     }
 
     /**
+     * Determine if the given key exists in the provided array using dot notation.
+     *
+     * @param array $subject
+     * @param string $dot
+     * @return bool
+     */
+    public static function has(array $subject, string $dot): bool
+    {
+        // Split the dot notation into segments
+        $segments = explode('.', $dot);
+        $segment = array_shift($segments);
+
+        if (isset($subject[$segment])) {
+            // There's no more segments to search, return true.
+            if (empty($segments)) {
+                return true;
+            }
+
+            // Recurse.
+            return self::has($subject[$segment], implode('.', $segments));
+        }
+
+        return false;
+    }
+
+    /**
      * Removes the specified item from the array, if it exists.
      *
      * @param array $subject

@@ -1,10 +1,8 @@
 <?php
 
-namespace Phoenix\Core\Helpers;
+namespace Phoenix\Utils\Helpers;
 
 use Closure;
-use Phoenix\Utils\Helpers\Arr;
-use Phoenix\Utils\Helpers\ClosureAdapter;
 use ReflectionException;
 
 class Str

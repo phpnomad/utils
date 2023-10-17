@@ -54,7 +54,7 @@ class Arr
      */
     public static function whereNotNull(array $subject): array
     {
-        return self::filter($subject, fn ($item) => $item !== null);
+        return self::filter($subject, fn($item) => $item !== null);
     }
 
     /**
@@ -137,6 +137,26 @@ class Arr
     public static function filter(array $subject, callable $callback): array
     {
         return array_filter($subject, $callback);
+    }
+
+    /**
+     * Finds a value based on a callback. Returns default value when not found.
+     *
+     * @param array $subject
+     * @param callable $callback
+     * @param $default
+     * @return mixed|null
+     */
+    public static function find(array $subject, callable $callback, $default = null)
+    {
+        foreach ($subject as $key => $item) {
+            $found = $callback($item, $key);
+            if ($found) {
+                return $item;
+            }
+        }
+
+        return $default;
     }
 
     /**

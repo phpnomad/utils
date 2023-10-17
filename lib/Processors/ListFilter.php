@@ -25,7 +25,7 @@ class ListFilter
      */
     public function lessThan(string $field, $number)
     {
-        $this->filter_args['field__less_than'] = $number;
+        $this->filter_args["{$field}__less_than"] = $number;
 
         return $this;
     }
@@ -37,7 +37,7 @@ class ListFilter
      */
     public function lessThanOrEqual(string $field, $number)
     {
-        $this->filter_args['field__less_than_or_equal_to'] = $number;
+        $this->filter_args["{$field}__less_than_or_equal_to"] = $number;
 
         return $this;
     }
@@ -49,7 +49,7 @@ class ListFilter
      */
     public function greaterThan(string $field, $number)
     {
-        $this->filter_args['field__greater_than'] = $number;
+        $this->filter_args["{$field}__greater_than"] = $number;
 
         return $this;
     }
@@ -61,7 +61,7 @@ class ListFilter
      */
     public function greaterThanOrEqual(string $field, $number)
     {
-        $this->filter_args['field__greater_than_or_equal_to'] = $number;
+        $this->filter_args["{$field}__greater_than_or_equal_to"] = $number;
 
         return $this;
     }
@@ -73,7 +73,7 @@ class ListFilter
      */
     public function filterFromCallback(string $field, callable $callback)
     {
-        $this->filter_args['field__callback'] = $callback;
+        $this->filter_args["{$field}__callback"] = $callback;
 
         return $this;
     }
@@ -144,7 +144,7 @@ class ListFilter
      */
     public function notIn(string $field, ...$values)
     {
-        $this->filter_args['field__not_in'] = $values;
+        $this->filter_args["{$field}__not_in"] = $values;
 
         return $this;
     }
@@ -159,7 +159,7 @@ class ListFilter
      */
     public function and(string $field, ...$values)
     {
-        $this->filter_args['field__and'] = $values;
+        $this->filter_args["{$field}__and"] = $values;
 
         return $this;
     }
@@ -174,7 +174,7 @@ class ListFilter
      */
     public function in(string $field, ...$values)
     {
-        $this->filter_args['field__in'] = $values;
+        $this->filter_args["{$field}__in"] = $values;
 
         return $this;
     }
@@ -190,7 +190,7 @@ class ListFilter
      */
     public function equals(string $field, $value)
     {
-        $this->filter_args['field__equals'] = $value;
+        $this->filter_args["{$field}__equals"] = $value;
 
         return $this;
     }
@@ -255,10 +255,10 @@ class ListFilter
         $valid = true;
 
         foreach ($this->filter_args as $key => $arg) {
+
             /* @var string $field */
             /* @var string $type */
             extract($this->prepareField($key));
-
 
             try {
                 if ('instanceof' === $field) {
@@ -373,6 +373,7 @@ class ListFilter
     {
         $results = [];
         foreach ($this->filterItemKeys() as $item_key) {
+
             if (!isset($this->items[$item_key])) {
                 continue;
             }

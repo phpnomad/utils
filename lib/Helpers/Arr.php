@@ -408,26 +408,6 @@ class Arr
     }
 
     /**
-     * Plucks a value from an array, if it is an array. Falls back to default value if not-set.
-     *
-     * @param mixed $item The array from which to pluck.
-     * @param string $key The key to pluck
-     * @param mixed $default The fallback value
-     *
-     * @return mixed The value
-     */
-    public static function pluck($item, string $key, $default = null)
-    {
-        $array = self::wrap($item);
-
-        if (isset($array[$key])) {
-            return $array[$key];
-        }
-
-        return $default;
-    }
-
-    /**
      * Recursively plucks values from a set of items.
      *
      * @param object[]|array[] $items The list of items.
@@ -436,7 +416,7 @@ class Arr
      *
      * @return array Array of values plucked from the list.
      */
-    public static function pluckRecursive(array $items, string $key, $default = false): array
+    public static function pluck(array $items, string $key, $default = false): array
     {
         $result = [];
         foreach ($items as $id => $item) {
@@ -448,9 +428,9 @@ class Arr
                     continue;
                 }
             } elseif (Arr::isAssociative($item)) {
-                $result[$id] = self::pluck($item, $key, $default);
+                $result[$id] = self::get($item, $key, $default);
             } elseif (is_array($item)) {
-                $result[$id] = array_merge($result, self::pluckRecursive($item, $key, $default));
+                $result[$id] = array_merge($result, self::pluck($item, $key, $default));
             } else {
                 $result[$id] = $default;
             }

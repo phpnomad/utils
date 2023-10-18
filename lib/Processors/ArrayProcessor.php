@@ -332,21 +332,6 @@ final class ArrayProcessor
     }
 
     /**
-     * Plucks a value from an array, if it is an array. Falls back to default value if not-set.
-     *
-     * @param string $key The key to pluck
-     * @param mixed $default The fallback value
-     *
-     * @return static
-     */
-    public function pluck(string $key, $default = false): ArrayProcessor
-    {
-        $this->subject = Arr::pluckRecursive($this->subject, $key, $default);
-
-        return $this;
-    }
-
-    /**
      * Filters the array to only contain values contained in all provided arrays.
      *
      * @param array ...$items

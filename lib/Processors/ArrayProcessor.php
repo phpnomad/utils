@@ -305,6 +305,13 @@ final class ArrayProcessor
         return $this;
     }
 
+    public function whereNotEmpty(): ArrayProcessor
+    {
+        $this->subject = Arr::whereNotEmpty($this->subject);
+
+        return $this;
+    }
+
     /**
      * Strips the keys from the array.
      *

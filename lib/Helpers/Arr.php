@@ -58,6 +58,17 @@ class Arr
     }
 
     /**
+     * Filters out items that are not null.
+     *
+     * @param array $subject
+     * @return array
+     */
+    public static function whereNotEmpty(array $subject): array
+    {
+        return self::filter($subject, fn($item) => !empty($item));
+    }
+
+    /**
      * Maps values, retaining keys if the array is associative.
      *
      * @param array $subject

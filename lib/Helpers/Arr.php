@@ -5,6 +5,7 @@ namespace Phoenix\Utils\Helpers;
 use Closure;
 use Phoenix\Core\Exceptions\ItemNotFound;
 use Phoenix\Utils\Processors\ArrayProcessor;
+use Phoenix\Utils\Processors\ListFilter;
 
 class Arr
 {
@@ -239,6 +240,19 @@ class Arr
         }
 
         return false;
+    }
+
+    /**
+     * Determines if all the specified set of values exist in the subject array.
+     *
+     * @param array $subject
+     * @param $value
+     * @param ...$values
+     * @return bool
+     */
+    public static function hasValues(array $subject, $value, ...$values): bool
+    {
+        return !empty(Arr::intersect($subject, Arr::merge([$value], $values)));
     }
 
     /**

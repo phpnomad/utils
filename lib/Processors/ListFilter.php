@@ -1,10 +1,10 @@
 <?php
 
-namespace Phoenix\Utils\Processors;
+namespace PHPNomad\Utils\Processors;
 
-use Phoenix\Core\Exceptions\ItemNotFound;
-use Phoenix\Utils\Helpers\Arr;
-use Phoenix\Utils\Helpers\Obj;
+use PHPNomad\Core\Exceptions\ItemNotFound;
+use PHPNomad\Utils\Helpers\Arr;
+use PHPNomad\Utils\Helpers\Obj;
 
 class ListFilter
 {

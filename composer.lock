@@ -753,16 +753,16 @@
             "time": "2022-02-21T01:04:05+00:00"
         },
         {
-            "name": "phoenix/tests",
+            "name": "phpnomad/tests",
             "version": "0.1.0",
             "source": {
                 "type": "git",
-                "url": "git@github.com:rooted-phoenix/tests.git",
+                "url": "git@github.com:phpnomad/tests.git",
                 "reference": "3e5d2dee9c6bada8f74dc5fd6531a30c5ce582a2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/rooted-phoenix/tests/zipball/3e5d2dee9c6bada8f74dc5fd6531a30c5ce582a2",
+                "url": "https://api.github.com/repos/phpnomad/tests/zipball/3e5d2dee9c6bada8f74dc5fd6531a30c5ce582a2",
                 "reference": "3e5d2dee9c6bada8f74dc5fd6531a30c5ce582a2",
                 "shasum": ""
             },
@@ -777,7 +777,7 @@
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "Phoenix\\Tests\\": "lib/"
+                    "PHPNomad\\Tests\\": "lib/"
                 }
             },
             "scripts": {
@@ -794,13 +794,13 @@
                     "email": "alex@standiford.us"
                 }
             ],
-            "description": "Testing library for Phoenix",
-            "homepage": "https://github.com/rooted-phoenix/tests",
+            "description": "Testing library for PHPNomad",
+            "homepage": "https://github.com/phpnomad/tests",
             "support": {
-                "issues": "https://github.com/rooted-phoenix/tests/issues",
-                "forum": "https://github.com/rooted-phoenix/tests/discussions",
-                "source": "https://github.com/rooted-phoenix/tests/releases",
-                "chat": "https://matrix.to/#/#project-phoenix:matrix.org"
+                "issues": "https://github.com/phpnomad/tests/issues",
+                "forum": "https://github.com/phpnomad/tests/discussions",
+                "source": "https://github.com/phpnomad/tests/releases",
+                "chat": "https://matrix.to/#/#project-phpnomad:matrix.org"
             },
             "time": "2023-10-05T10:03:49+00:00"
         },

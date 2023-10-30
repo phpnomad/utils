@@ -1,6 +1,6 @@
 <?php
 
-namespace Phoenix\Utils\Helpers;
+namespace PHPNomad\Utils\Helpers;
 
 use Closure;
 use ReflectionException;

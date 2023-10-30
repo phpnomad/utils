@@ -1,9 +1,9 @@
 <?php
 
-namespace Phoenix\Utils\Helpers;
+namespace PHPNomad\Utils\Helpers;
 
 use Exception;
-use Phoenix\Core\Exceptions\ItemNotFound;
+use PHPNomad\Core\Exceptions\ItemNotFound;
 
 class Obj
 {

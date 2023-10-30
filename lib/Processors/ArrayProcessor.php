@@ -1,8 +1,8 @@
 <?php
 
-namespace Phoenix\Utils\Processors;
+namespace PHPNomad\Utils\Processors;
 
-use Phoenix\Utils\Helpers\Arr;
+use PHPNomad\Utils\Helpers\Arr;
 use ReflectionException;
 
 final class ArrayProcessor

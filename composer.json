@@ -1,8 +1,8 @@
 {
-    "name": "phoenix/utils",
+    "name": "phpnomad/utils",
     "description": "",
     "type": "library",
-    "homepage": "https://github.com/phoenix/core",
+    "homepage": "https://github.com/phpnomad/core",
     "readme": "README.md",
     "license": "MIT",
     "scripts": {
@@ -11,17 +11,17 @@
     "repositories": [
         {
             "type": "vcs",
-            "url": "https://github.com/rooted-phoenix/tests.git"
+            "url": "https://github.com/phpnomad/tests.git"
         }
     ],
     "autoload": {
         "psr-4": {
-            "Phoenix\\Utils\\": "lib/"
+            "PHPNomad\\Utils\\": "lib/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Phoenix\\Utils\\Tests\\": "tests/"
+            "PHPNomad\\Utils\\Tests\\": "tests/"
         }
     },
     "authors": [
@@ -31,7 +31,7 @@
         }
     ],
     "require-dev": {
-        "phoenix/tests": "^0.1.0"
+        "phpnomad/tests": "^0.1.0"
     },
     "config": {
         "allow-plugins": {

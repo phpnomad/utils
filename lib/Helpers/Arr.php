@@ -1,11 +1,11 @@
 <?php
 
-namespace Phoenix\Utils\Helpers;
+namespace PHPNomad\Utils\Helpers;
 
 use Closure;
-use Phoenix\Core\Exceptions\ItemNotFound;
-use Phoenix\Utils\Processors\ArrayProcessor;
-use Phoenix\Utils\Processors\ListFilter;
+use PHPNomad\Core\Exceptions\ItemNotFound;
+use PHPNomad\Utils\Processors\ArrayProcessor;
+use PHPNomad\Utils\Processors\ListFilter;
 
 class Arr
 {

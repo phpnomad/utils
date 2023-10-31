@@ -33,4 +33,19 @@ class Obj
 
         return $value;
     }
+
+    /**
+     * @param class-string $instance
+     * @param class-string $implements
+     * @param class-string ...$moreImplements
+     * @return bool
+     */
+    public static function implements(string $instance, string $implements, string ...$moreImplements): bool
+    {
+        $items = class_implements($instance);
+        $implements = Arr::merge([$implements], $moreImplements);
+        $test = Arr::intersect($items, $implements);
+
+        return count($test) === count($implements);
+    }
 }

@@ -148,7 +148,7 @@ class Arr
      */
     public static function filter(array $subject, callable $callback): array
     {
-        return array_filter($subject, $callback);
+        return array_filter($subject, $callback, ARRAY_FILTER_USE_BOTH);
     }
 
     /**
@@ -389,6 +389,32 @@ class Arr
     }
 
     /**
+     * Check if the specified arrays contain the same data regardless of order.
+     *
+     * @param array $input
+     * @param array ...$inputs
+     * @return bool
+     */
+    public static function containsSameData($input, ...$inputs): bool
+    {
+        $inputs = Arr::merge([$input], $inputs);
+        $a = array_shift($inputs);
+        $a = static::normalize($a);
+
+        while (!empty($inputs)) {
+            $b = array_shift($inputs);
+
+            $b = static::normalize($b);
+
+            if ($a !== $b) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Sorts an array.
      *
      * @param array $subject The item to sort
@@ -567,6 +593,7 @@ class Arr
         // Sorting behavior depends on if the array is associative, or not.
         if (self::isAssociative($array)) {
             ksort($array);
+            asort($array);
         } else {
             sort($array);
         }

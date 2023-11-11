@@ -661,4 +661,29 @@ class Arr
         return array_replace($items);
     }
 
+    /**
+     * Gets the first value from the array.
+     *
+     * @param array $items
+     * @param null $default
+     * @return mixed
+     */
+    public static function first(array $items, $default = null)
+    {
+        return Arr::get(array_values($items),0, $default);
+    }
+
+    /**
+     * Gets the first value from the array.
+     *
+     * @param array $items
+     * @param null $default
+     * @return mixed
+     */
+    public static function last(array $items, $default = null)
+    {
+        $items = array_values($items);
+
+        return Arr::get($items,count($items) - 1, $default);
+    }
 }

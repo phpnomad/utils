@@ -11,6 +11,8 @@ class ListFilter
 
     protected array $filter_args = [];
     protected array $items;
+    protected ?int $limit = null;
+    protected ?int $offset = null;
 
     public function __construct(array $items)
     {
@@ -165,7 +167,7 @@ class ListFilter
     }
 
     /**
-     * Sets the query to filter out items whose field does not have all the provided values.
+     * Sets the query to filter out items whose field does not have any of the provided values.
      *
      * @param string $field The field to check against.
      * @param array $values The values to filter.
@@ -340,30 +342,6 @@ class ListFilter
         return $items;
     }
 
-
-    /**
-     * Finds the first loader item that matches the provided arguments.
-     *
-     * @return ?object loader item if found.
-     */
-    public function find(): ?object
-    {
-        foreach ($this->filterItemKeys() as $item_key) {
-            if (!isset($this->items[$item_key])) {
-                continue;
-            }
-
-            $item = $this->filterItem($this->items[$item_key]);
-
-            if ($item) {
-                return $item;
-            }
-        }
-
-        return null;
-    }
-
-
     /**
      * Queries a loader registry.
      *
@@ -372,8 +350,13 @@ class ListFilter
     public function filter(): array
     {
         $results = [];
-        foreach ($this->filterItemKeys() as $item_key) {
+        $actualLimit = $this->limit ?? 0 + $this->offset ?? 0;
 
+        if(!$actualLimit){
+            $actualLimit = null;
+        }
+
+        foreach ($this->filterItemKeys() as $item_key) {
             if (!isset($this->items[$item_key])) {
                 continue;
             }
@@ -383,25 +366,40 @@ class ListFilter
             if ($item) {
                 $results[$item_key] = $item;
             }
+
+            if($actualLimit === count($results)){
+                break;
+            }
+        }
+
+        if(!is_null($this->offset)){
+            $results = Arr::after($results, $this->offset - 1);
         }
 
         return $results;
     }
 
     /**
-     * Seeds a new instance of the list filter, using pre-generated arguments and items.
+     * Stops after reaching the specified number of results.
      *
-     * @param array $items
-     * @param array $args
-     *
-     * @return static
+     * @param ?positive-int $limit
+     * @return $this
      */
-    public static function seed(array $items, array $args)
+    public function limit(?int $limit = null)
     {
-        $self = new static($items);
-        $self->filter_args = $args;
+        $this->limit = $limit;
 
-        return $self;
+        return $this;
     }
 
+    /**
+     * @param int|null $offset
+     * @return $this
+     */
+    public function offset(?int $offset = null)
+    {
+        $this->offset = $offset;
+
+        return $this;
+    }
 }

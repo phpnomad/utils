@@ -171,6 +171,18 @@ class Arr
         return $default;
     }
 
+    public static function findKey(array $subject, callable $callback)
+    {
+        foreach ($subject as $key => $item) {
+            $found = $callback($item, $key);
+            if ($found) {
+                return $key;
+            }
+        }
+
+        return null;
+    }
+
     /**
      * Returns the values of the array.
      *

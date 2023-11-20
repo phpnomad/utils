@@ -479,7 +479,7 @@ class Arr
      *
      * @return array Array of values plucked from the list.
      */
-    public static function pluck(array $items, string $key, $default = false): array
+    public static function pluck(array $items, string $key, $default = null): array
     {
         $result = [];
         foreach ($items as $id => $item) {

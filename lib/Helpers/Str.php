@@ -209,4 +209,20 @@ class Str
         $callback(...$args);
         return (string) ob_get_clean();
     }
+
+    /**
+     * Join an array of items into a string using a specified conjunction.
+     *
+     * @param array $enumerableItems Array of items to be enumerated
+     * @param string $conjunction Conjunction used for joining the items (default: 'and')
+     *
+     * @return string Joined string with enumerated items
+     */
+    public static function enumerate(array $enumerableItems, string $conjunction = 'and'): string
+    {
+        $enumerableItems = Arr::cast($enumerableItems, 'string');
+        $lastItem = array_pop($enumerableItems);
+
+        return $enumerableItems ? implode(', ', $enumerableItems) . ", $conjunction " . $lastItem : $lastItem;
+    }
 }

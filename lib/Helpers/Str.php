@@ -218,11 +218,21 @@ class Str
      *
      * @return string Joined string with enumerated items
      */
-    public static function enumerate(array $enumerableItems, string $conjunction = 'and'): string
+    public static function enumerate(array $enumerableItems, string $conjunction = 'and', string $prefix = ''): string
     {
+        if(empty($enumerableItems)){
+            return '';
+        }
+
         $enumerableItems = Arr::cast($enumerableItems, 'string');
         $lastItem = array_pop($enumerableItems);
 
-        return $enumerableItems ? implode(', ', $enumerableItems) . ", $conjunction " . $lastItem : $lastItem;
+        $result = $enumerableItems ? implode(', ', $enumerableItems) . ", $conjunction " . $lastItem : $lastItem;
+
+        if(count($enumerableItems) > 1){
+            return $prefix . ' ' . $result;
+        }
+
+        return $result;
     }
 }

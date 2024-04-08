@@ -60,7 +60,7 @@ class Str
      * @return string a 32 character hash from the provided value.
      * @throws ReflectionException
      */
-    public static function createHash(mixed $data, ?string $key = null): string
+    public static function createHash($data, ?string $key = null): string
     {
         // If object, convert to array.
         if (is_object($data)) {

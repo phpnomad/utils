@@ -5,7 +5,6 @@ namespace PHPNomad\Utils\Helpers;
 use Closure;
 use PHPNomad\Core\Exceptions\ItemNotFound;
 use PHPNomad\Utils\Processors\ArrayProcessor;
-use PHPNomad\Utils\Processors\ListFilter;
 
 class Arr
 {
@@ -353,6 +352,59 @@ class Arr
     }
 
     /**
+     * Groups items in an array based on the group keys that all have matching values.
+     *
+     * @param array<object|array> $subject The array to group.
+     * @param string ...$groupKeys The keys or property names to group by.
+     * @return array An array of arrays, each containing items grouped by the specified keys.
+     */
+    public static function group(array $subject, string ...$groupKeys): array
+    {
+        $groups = [];
+        $validTypesForConcatenation = ['string', 'integer', 'double', 'boolean', 'NULL'];
+
+        foreach ($subject as $item) {
+            $groupKeyParts = [];
+            foreach ($groupKeys as $key) {
+                if (is_object($item)) {
+                    try {
+                        $value = Obj::pluck($item, $key);
+                    } catch (ItemNotFound $e) {
+                        $value = null;
+                    }
+                } else{
+                    $value = Arr::get($item, $key);
+                }
+
+                // Check if value is of a type that can be directly concatenated; otherwise, use hashing.
+                if (!in_array(gettype($value), $validTypesForConcatenation, true)) {
+                    try {
+                        $value = Str::createHash($value);
+                    } catch (\ReflectionException $e) {
+                        $value = null;
+                    }
+                }
+
+                $groupKeyParts[] = $value;
+            }
+
+            try {
+                $groupKey = implode('|', Arr::normalize($groupKeyParts));
+            } catch (\ReflectionException $e) {
+                $groupKey = null;
+            }
+
+            if (!isset($groups[$groupKey])) {
+                $groups[$groupKey] = [];
+            }
+
+            $groups[$groupKey][] = $item;
+        }
+
+        return array_values($groups);
+    }
+
+    /**
      * Updates the array to contain a key equal to the array's key value.
      *
      * @param array $subject
@@ -682,7 +734,7 @@ class Arr
      */
     public static function first(array $items, $default = null)
     {
-        return Arr::get(array_values($items),0, $default);
+        return Arr::get(array_values($items), 0, $default);
     }
 
     /**
@@ -696,6 +748,6 @@ class Arr
     {
         $items = array_values($items);
 
-        return Arr::get($items,count($items) - 1, $default);
+        return Arr::get($items, count($items) - 1, $default);
     }
 }

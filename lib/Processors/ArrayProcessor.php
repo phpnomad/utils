@@ -121,6 +121,13 @@ final class ArrayProcessor
         return $this;
     }
 
+    public function group(string ...$groups): ArrayProcessor
+    {
+        $this->subject = Arr::group($this->subject, ...$groups);
+
+        return $this;
+    }
+
     public function toIndexed(string $key = 'key'): ArrayProcessor
     {
         $this->subject = Arr::toIndexed($this->subject, $key);

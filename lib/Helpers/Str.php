@@ -36,6 +36,14 @@ class Str
         return lcfirst(static::pascalCase($subject));
     }
 
+    public static function camelCaseToDashCase(string $subject): string
+    {
+        $subject = preg_replace('/[A-Z]/', '-$0', $subject);
+        $subject = strtolower($subject);
+
+        return ltrim($subject, '-');
+    }
+
     /**
      * Converts the given string to use PascalCase
      *

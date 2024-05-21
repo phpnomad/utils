@@ -92,6 +92,11 @@ class Str
         }
     }
 
+    public static function contains($haystack, $needle): bool
+    {
+        return strpos($haystack, $needle) !== false;
+    }
+    
     /**
      * Trim the specified item from the end of the string.
      *

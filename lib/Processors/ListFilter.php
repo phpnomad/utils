@@ -17,7 +17,6 @@ class ListFilter
     public function __construct(array $items)
     {
         $this->items = $items;
-
     }
 
     /**
@@ -401,5 +400,21 @@ class ListFilter
         $this->offset = $offset;
 
         return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getFilterArgs(): array
+    {
+        return $this->filter_args;
+    }
+
+    public static function seed(array $filterArgs, array $inputData): ListFilter
+    {
+        $new = new static($inputData);
+        $new->filter_args = $filterArgs;
+
+        return $new;
     }
 }

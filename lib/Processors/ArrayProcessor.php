@@ -16,12 +16,27 @@ final class ArrayProcessor
         $this->subject = $subject;
     }
 
+    public function pluck(string $key, $default = null)
+    {
+        $this->subject = Arr::pluck($this->subject, $key, $default);
+
+        return $this;
+    }
+
     /**
      * @return array
      */
     public function toArray(): array
     {
         return $this->subject;
+    }
+
+    /**
+     * @return int
+     */
+    public function count(): int
+    {
+        return count($this->subject);
     }
 
     /**

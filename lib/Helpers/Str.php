@@ -206,9 +206,19 @@ class Str
         return array_pop($items);
     }
 
-    public static function after($subject, $after = ' '): string
+    public static function after(string $haystack, string $needle): string
     {
-        return substr($subject, strpos($subject, $after) + 1);
+        if ($needle === '') {
+            return $haystack;
+        }
+
+        $pos = strpos($haystack, $needle);
+
+        if ($pos === false) {
+            return $haystack;
+        }
+
+        return substr($haystack, $pos + strlen($needle));
     }
 
     public static function before($subject, $before = ' '): string

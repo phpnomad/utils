@@ -223,7 +223,17 @@ class Str
 
     public static function before($subject, $before = ' '): string
     {
-        return substr($subject, 0, strpos($subject, $before) - strlen($subject));
+        if ($before === '') {
+            return $subject;
+        }
+
+        $pos = strpos($subject, $before);
+
+        if ($pos === false) {
+            return $subject;
+        }
+
+        return substr($subject, 0, $pos);
     }
 
     public static function getBuffer(callable $callback, ...$args): string

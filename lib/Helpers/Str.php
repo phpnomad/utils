@@ -206,19 +206,28 @@ class Str
         return array_pop($items);
     }
 
-    public static function after(string $haystack, string $needle): string
+    /**
+     * Get the portion of a string after the first occurrence of a given value.
+     *
+     * @param string $subject The string to search in.
+     * @param string $after The value to search for.
+     *
+     * @return string The portion of the string after the first occurrence of the value,
+     *                or the original string if the value is not found.
+     */
+    public static function after(string $subject, string $after = ' '): string
     {
-        if ($needle === '') {
-            return $haystack;
+        if ($after === '') {
+            return $subject;
         }
 
-        $pos = strpos($haystack, $needle);
+        $pos = strpos($subject, $after);
 
         if ($pos === false) {
-            return $haystack;
+            return $subject;
         }
 
-        return substr($haystack, $pos + strlen($needle));
+        return substr($subject, $pos + strlen($after));
     }
 
     /**

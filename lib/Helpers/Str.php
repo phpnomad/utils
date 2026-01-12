@@ -206,24 +206,52 @@ class Str
         return array_pop($items);
     }
 
-    public static function after(string $haystack, string $needle): string
+    /**
+     * Get the portion of a string after the first occurrence of a given value.
+     *
+     * @param string $subject The string to search in.
+     * @param string $after The value to search for.
+     *
+     * @return string The portion of the string after the first occurrence of the value,
+     *                or the original string if the value is not found.
+     */
+    public static function after(string $subject, string $after = ' '): string
     {
-        if ($needle === '') {
-            return $haystack;
+        if ($after === '') {
+            return $subject;
         }
 
-        $pos = strpos($haystack, $needle);
+        $pos = strpos($subject, $after);
 
         if ($pos === false) {
-            return $haystack;
+            return $subject;
         }
 
-        return substr($haystack, $pos + strlen($needle));
+        return substr($subject, $pos + strlen($after));
     }
 
-    public static function before($subject, $before = ' '): string
+    /**
+     * Get the portion of a string before the first occurrence of a given value.
+     *
+     * @param string $subject The string to search in.
+     * @param string $before The value to search for.
+     *
+     * @return string The portion of the string before the first occurrence of the value,
+     *                or the original string if the value is not found.
+     */
+    public static function before(string $subject, string $before = ' '): string
     {
-        return substr($subject, 0, strpos($subject, $before) - strlen($subject));
+        if ($before === '') {
+            return $subject;
+        }
+
+        $pos = strpos($subject, $before);
+
+        if ($pos === false) {
+            return $subject;
+        }
+
+        return substr($subject, 0, $pos);
     }
 
     public static function getBuffer(callable $callback, ...$args): string

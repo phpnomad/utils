@@ -221,7 +221,16 @@ class Str
         return substr($haystack, $pos + strlen($needle));
     }
 
-    public static function before($subject, $before = ' '): string
+    /**
+     * Get the portion of a string before the first occurrence of a given value.
+     *
+     * @param string $subject The string to search in.
+     * @param string $before The value to search for.
+     *
+     * @return string The portion of the string before the first occurrence of the value,
+     *                or the original string if the value is not found.
+     */
+    public static function before(string $subject, string $before = ' '): string
     {
         if ($before === '') {
             return $subject;

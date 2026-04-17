@@ -230,27 +230,26 @@ class Arr
     /**
      * Determine if the given key exists in the provided array using dot notation.
      *
+     * Walks segments iteratively, mirroring {@see Arr::dot()}. Returns false
+     * as soon as any intermediate segment resolves to a non-array or the key
+     * is unset — so probing a deeper path than the data supports is safe,
+     * never a TypeError.
+     *
      * @param array $subject
      * @param string $dot
      * @return bool
      */
     public static function has(array $subject, string $dot): bool
     {
-        // Split the dot notation into segments
-        $segments = explode('.', $dot);
-        $segment = array_shift($segments);
-
-        if (isset($subject[$segment])) {
-            // There's no more segments to search, return true.
-            if (empty($segments)) {
-                return true;
+        $cursor = $subject;
+        foreach (explode('.', $dot) as $segment) {
+            if (!is_array($cursor) || !isset($cursor[$segment])) {
+                return false;
             }
-
-            // Recurse.
-            return self::has($subject[$segment], implode('.', $segments));
+            $cursor = $cursor[$segment];
         }
 
-        return false;
+        return true;
     }
 
     /**

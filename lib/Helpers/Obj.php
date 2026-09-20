@@ -18,11 +18,13 @@ class Obj
         $fields = explode('.', $fields);
         foreach ($fields as $field) {
             $name = ucfirst($field);
+            $camelGetter = "get$name";
+            $snakeGetter = "get_$field";
             // Bail early if this field is not in this object.
-            if (is_callable([$value, "get$name"])) {
-                $value = call_user_func([$value, "get$name"]);
-            } elseif (is_callable([$value, "get_$field"])) {
-                $value = call_user_func([$value, "get_$field"]);
+            if (is_callable([$value, $camelGetter])) {
+                $value = $value->{$camelGetter}();
+            } elseif (is_callable([$value, $snakeGetter])) {
+                $value = $value->{$snakeGetter}();
             } else {
                 try {
                     $value = $value->$field;

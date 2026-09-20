@@ -38,8 +38,7 @@ class Str
 
     public static function camelCaseToDashCase(string $subject): string
     {
-        $subject = preg_replace('/[A-Z]/', '-$0', $subject);
-        /** @var string $subject A fixed valid expression always returns a string. */
+        $subject = preg_replace('/[A-Z]/', '-$0', $subject) ?? $subject;
         $subject = strtolower($subject);
 
         return ltrim($subject, '-');
@@ -283,6 +282,7 @@ class Str
 
         $enumerableItems = Arr::cast($enumerableItems, 'string');
         $lastItem = array_pop($enumerableItems);
+        /** @var string $lastItem */
 
         $result = $enumerableItems ? implode(', ', $enumerableItems) . ", $conjunction " . $lastItem : $lastItem;
 

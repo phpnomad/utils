@@ -6,6 +6,7 @@ use PHPNomad\Core\Exceptions\ItemNotFound;
 use PHPNomad\Utils\Helpers\Arr;
 use PHPNomad\Utils\Helpers\Obj;
 
+/** @phpstan-consistent-constructor */
 class ListFilter
 {
 

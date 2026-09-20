@@ -2,6 +2,7 @@
 
 namespace PHPNomad\Utils\Processors;
 
+use InvalidArgumentException;
 use PHPNomad\Core\Exceptions\ItemNotFound;
 use PHPNomad\Utils\Helpers\Arr;
 use PHPNomad\Utils\Helpers\Obj;
@@ -277,6 +278,9 @@ class ListFilter
             }
 
             if ($type === 'callback') {
+                if (!is_callable($arg)) {
+                    throw new InvalidArgumentException("Filter '$key' must contain a callable value.");
+                }
                 $valid = $arg($value);
             } else {
 
@@ -290,6 +294,9 @@ class ListFilter
                         $valid = !empty($fields);
                         break;
                     case 'and':
+                        if (!is_array($arg)) {
+                            throw new InvalidArgumentException("Filter '$key' must contain an array of values.");
+                        }
                         $valid = count($fields) === count($arg);
                         break;
                     case 'equals':
@@ -334,16 +341,45 @@ class ListFilter
 
         // Filter out keys, if keys are specified
         if (isset($this->filter_args['filter_enum_key__in'])) {
-            $items = Arr::intersect($items, $this->filter_args['filter_enum_key__in']);
+            $includedKeys = $this->filter_args['filter_enum_key__in'];
+            if (!$this->isArrayOfKeys($includedKeys)) {
+                throw new InvalidArgumentException('Key inclusion filters must contain an array of integer or string keys.');
+            }
+            $items = Arr::intersect($items, $includedKeys);
+            /** @var array<array-key, array-key> $items */
             unset($this->filter_args['filter_enum_key__in']);
         }
 
         if (isset($this->filter_args['filter_enum_key__not_in'])) {
-            $items = Arr::diff($items, $this->filter_args['filter_enum_key__not_in']);
+            $excludedKeys = $this->filter_args['filter_enum_key__not_in'];
+            if (!$this->isArrayOfKeys($excludedKeys)) {
+                throw new InvalidArgumentException('Key exclusion filters must contain an array of integer or string keys.');
+            }
+            $items = Arr::diff($items, $excludedKeys);
+            /** @var array<array-key, array-key> $items */
             unset($this->filter_args['filter_enum_key__not_in']);
         }
 
         return $items;
+    }
+
+    /**
+     * @param mixed $value
+     * @phpstan-assert-if-true array<array-key, array-key> $value
+     */
+    private function isArrayOfKeys($value): bool
+    {
+        if (!is_array($value)) {
+            return false;
+        }
+
+        foreach ($value as $item) {
+            if (!is_int($item) && !is_string($item)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

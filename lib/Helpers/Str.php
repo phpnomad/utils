@@ -70,6 +70,11 @@ class Str
      */
     public static function createHash($data, ?string $key = null): string
     {
+        // Convert closures before the generic object branch erases their source and captures.
+        if ($data instanceof Closure) {
+            $data = ClosureAdapter::getClosureData($data);
+        }
+
         // If object, convert to array.
         if (is_object($data)) {
             $data = (array)$data;
@@ -78,11 +83,6 @@ class Str
         // Normalize the array
         if (is_array($data)) {
             $data = Arr::normalize($data);
-        }
-
-        // Convert closures
-        if ($data instanceof Closure) {
-            $data = ClosureAdapter::getClosureData($data);
         }
 
         if (!$key) {
@@ -203,8 +203,19 @@ class Str
         return $prepend . $subject;
     }
 
+    /**
+     * @param mixed $subject
+     * @param mixed $divider
+     */
     public static function basename($subject, $divider = '/'): ?string
     {
+        if (!is_string($subject) || !is_string($divider)) {
+            return null;
+        }
+        if ($divider === '') {
+            throw new \ValueError('explode(): Argument #1 ($separator) cannot be empty');
+        }
+
         $items = explode($divider, $subject);
 
         return array_pop($items);

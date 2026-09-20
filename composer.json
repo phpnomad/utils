@@ -12,7 +12,10 @@
     "autoload": {
         "psr-4": {
             "PHPNomad\\Utils\\": "lib/"
-        }
+        },
+        "classmap": [
+            "lib/Exceptions/"
+        ]
     },
     "autoload-dev": {
         "psr-4": {

@@ -2,8 +2,8 @@
 
 namespace PHPNomad\Utils\Helpers;
 
-use Exception;
 use PHPNomad\Core\Exceptions\ItemNotFound;
+use Throwable;
 
 class Obj
 {
@@ -17,6 +17,10 @@ class Obj
     {
         $fields = explode('.', $fields);
         foreach ($fields as $field) {
+            if (!is_object($value)) {
+                throw new ItemNotFound("Cannot read field '$field' from a non-object value.");
+            }
+
             $name = ucfirst($field);
             $camelGetter = "get$name";
             $snakeGetter = "get_$field";
@@ -25,16 +29,31 @@ class Obj
                 $value = $value->{$camelGetter}();
             } elseif (is_callable([$value, $snakeGetter])) {
                 $value = $value->{$snakeGetter}();
-            } else {
+            } elseif (array_key_exists($field, get_object_vars($value))) {
                 try {
-                    $value = $value->$field;
-                } catch (Exception $e) {
-                    throw new ItemNotFound();
+                    $value = self::readPublicProperty($value, $field);
+                } catch (Throwable $e) {
+                    throw new ItemNotFound("Cannot read field '$field'.", 0, $e);
                 }
+            } elseif (property_exists($value, $field)) {
+                throw new ItemNotFound("Cannot read inaccessible or uninitialized field '$field'.");
+            } elseif (method_exists($value, '__get')) {
+                $value = $value->$field;
+            } else {
+                throw new ItemNotFound("Field '$field' was not found.");
             }
         }
 
         return $value;
+    }
+
+    /**
+     * @return mixed
+     * @throws Throwable
+     */
+    private static function readPublicProperty(object $value, string $field)
+    {
+        return $value->$field;
     }
 
     /**

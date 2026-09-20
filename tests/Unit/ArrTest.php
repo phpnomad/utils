@@ -41,6 +41,14 @@ class ArrTest extends TestCase
         );
     }
 
+    public function testPluckUsesTheDefaultForScalarItems(): void
+    {
+        $this->assertSame(
+            ['missing', 'found'],
+            Arr::pluck([42, ['name' => 'found']], 'name', 'missing')
+        );
+    }
+
     /**
      * @dataProvider hasDottedPathCases
      * @param array<string, mixed> $subject

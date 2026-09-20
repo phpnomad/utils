@@ -531,7 +531,7 @@ class Arr
     /**
      * Recursively plucks values from a set of items.
      *
-     * @param array<array-key, object|array<array-key, mixed>> $items The list of items.
+     * @param array<array-key, mixed> $items The list of items.
      * @param string $key The key that the value is set against.
      * @param mixed $default The default value to use when the value is not set.
      *
@@ -548,7 +548,7 @@ class Arr
                     $result[$id] = $default;
                     continue;
                 }
-            } elseif (Arr::isAssociative($item)) {
+            } elseif (is_array($item) && Arr::isAssociative($item)) {
                 $result[$id] = self::get($item, $key, $default);
             } elseif (is_array($item)) {
                 $result[$id] = array_merge($result, self::pluck($item, $key, $default));
@@ -631,7 +631,7 @@ class Arr
      * @param array<array-key, int|string> $array
      * @return array<int|string, array-key>
      */
-    public static function flip($array): array
+    public static function flip(array $array): array
     {
         return array_flip($array);
     }

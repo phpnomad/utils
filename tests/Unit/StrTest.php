@@ -7,6 +7,36 @@ use PHPNomad\Utils\Helpers\Str;
 
 class StrTest extends TestCase
 {
+    public function testClosureHashIncludesCapturedValues(): void
+    {
+        $first = $this->closureWithCapture(10);
+        $same = $this->closureWithCapture(10);
+        $different = $this->closureWithCapture(20);
+
+        $this->assertSame(Str::createHash($first), Str::createHash($same));
+        $this->assertNotSame(Str::createHash($first), Str::createHash($different));
+    }
+
+    public function testBasenameReturnsNullForNonStringArguments(): void
+    {
+        $this->assertNull(Str::basename(null));
+        $this->assertNull(Str::basename(123));
+        $this->assertNull(Str::basename('path/to/file.php', null));
+    }
+
+    public function testBasenamePreservesValidStringBehavior(): void
+    {
+        $this->assertSame('file.php', Str::basename('path/to/file.php'));
+        $this->assertSame('value', Str::basename('prefix::value', '::'));
+    }
+
+    private function closureWithCapture(int $captured): \Closure
+    {
+        return static function () use ($captured): int {
+            return $captured;
+        };
+    }
+
     /**
      * Test the Str::before() method with various inputs
      *

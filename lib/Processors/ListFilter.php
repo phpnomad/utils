@@ -145,7 +145,7 @@ class ListFilter
      * Sets the query to filter out items whose field has any of the provided values.
      *
      * @param string $field The field to check against.
-     * @param mixed ...$values The values to filter.
+     * @param scalar|\Stringable|null ...$values The values to filter.
      *
      * @return $this
      */
@@ -160,7 +160,7 @@ class ListFilter
      * Sets the query to filter out items whose field does not have all the provided values.
      *
      * @param string $field The field to check against.
-     * @param mixed ...$values The values to filter.
+     * @param scalar|\Stringable|null ...$values The values to filter.
      *
      * @return $this
      */
@@ -175,7 +175,7 @@ class ListFilter
      * Sets the query to filter out items whose field does not have any of the provided values.
      *
      * @param string $field The field to check against.
-     * @param mixed ...$values The values to filter.
+     * @param scalar|\Stringable|null ...$values The values to filter.
      *
      * @return $this
      */
@@ -191,7 +191,7 @@ class ListFilter
      * Sets the query to filter out items whose value is not identical to the provided value.
      *
      * @param string $field The field to check against.
-     * @param mixed $value The value to check.
+     * @param scalar|\Stringable|null $value The value to check.
      *
      * @return $this
      */
@@ -284,7 +284,10 @@ class ListFilter
                 $valid = $arg($value);
             } else {
 
-                $fields = Arr::intersect(Arr::wrap($arg), Arr::wrap($value));
+                $fields = Arr::intersect(
+                    $this->getComparableValues(Arr::wrap($arg), $key),
+                    $this->getComparableValues(Arr::wrap($value), $key)
+                );
 
                 switch ($type) {
                     case 'not_in':
@@ -389,9 +392,7 @@ class ListFilter
     {
         $result = [];
         foreach (Arr::intersect($items, $includedKeys) as $key => $item) {
-            if (is_int($item) || is_string($item)) {
-                $result[$key] = $item;
-            }
+            $result[$key] = $item;
         }
 
         return $result;
@@ -406,18 +407,35 @@ class ListFilter
     {
         $result = [];
         foreach (Arr::diff($items, $excludedKeys) as $key => $item) {
-            if (is_int($item) || is_string($item)) {
-                $result[$key] = $item;
-            }
+            $result[$key] = $item;
         }
 
         return $result;
     }
 
     /**
+     * @param array<array-key, mixed> $values
+     * @return array<array-key, scalar|\Stringable|null>
+     */
+    private function getComparableValues(array $values, string $filter): array
+    {
+        $comparable = [];
+        foreach ($values as $key => $value) {
+            if (!is_scalar($value) && $value !== null && !($value instanceof \Stringable)) {
+                throw new InvalidArgumentException(
+                    "Filter '$filter' must contain only scalar, null, or stringable values."
+                );
+            }
+            $comparable[$key] = $value;
+        }
+
+        return $comparable;
+    }
+
+    /**
      * Queries a loader registry.
      *
-     * @return object[] Array of registry items.
+     * @return array<array-key, object> Array of registry items.
      */
     public function filter(): array
     {
@@ -453,22 +471,32 @@ class ListFilter
     /**
      * Stops after reaching the specified number of results.
      *
-     * @param ?positive-int $limit
+     * @param int|null $limit Must be positive when provided.
      * @return $this
+     * @throws InvalidArgumentException
      */
     public function limit(?int $limit = null)
     {
+        if ($limit !== null && $limit < 1) {
+            throw new InvalidArgumentException('Limit must be null or a positive integer.');
+        }
+
         $this->limit = $limit;
 
         return $this;
     }
 
     /**
-     * @param int|null $offset
+     * @param int|null $offset Must not be negative when provided.
      * @return $this
+     * @throws InvalidArgumentException
      */
     public function offset(?int $offset = null)
     {
+        if ($offset !== null && $offset < 0) {
+            throw new InvalidArgumentException('Offset must be null or a non-negative integer.');
+        }
+
         $this->offset = $offset;
 
         return $this;

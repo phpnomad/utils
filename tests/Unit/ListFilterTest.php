@@ -89,6 +89,84 @@ class ListFilterTest extends TestCase
         $this->assertSame([1, 2], $this->ids($result));
     }
 
+    /** @dataProvider invalidLimitCases */
+    public function testInvalidLimitIsRejectedWithoutChangingThePreviousLimit(int $invalidLimit): void
+    {
+        $filter = (new ListFilter($this->items(1, 2, 3)))->limit(2);
+
+        try {
+            $filter->limit($invalidLimit);
+            $this->fail('Expected an invalid limit to be rejected.');
+        } catch (InvalidArgumentException $e) {
+            $this->assertStringContainsString('positive', $e->getMessage());
+        }
+
+        $this->assertSame([1, 2], $this->ids($filter->filter()));
+    }
+
+    /** @return iterable<string, array{int}> */
+    public static function invalidLimitCases(): iterable
+    {
+        yield 'zero' => [0];
+        yield 'negative' => [-1];
+    }
+
+    public function testNegativeOffsetIsRejectedWithoutChangingThePreviousOffset(): void
+    {
+        $filter = (new ListFilter($this->items(1, 2, 3)))->offset(1);
+
+        try {
+            $filter->offset(-1);
+            $this->fail('Expected a negative offset to be rejected.');
+        } catch (InvalidArgumentException $e) {
+            $this->assertStringContainsString('non-negative', $e->getMessage());
+        }
+
+        $this->assertSame([2, 3], $this->ids($filter->filter()));
+    }
+
+    public function testComparableFilterValuesRemainSupported(): void
+    {
+        $stringable = new ListFilterStringableValue('wanted');
+        $items = [
+            'first' => new ListFilterValueItem(false),
+            'second' => new ListFilterValueItem(1.5),
+            'third' => new ListFilterValueItem(2),
+            'fourth' => new ListFilterValueItem('three'),
+            'fifth' => new ListFilterValueItem(null),
+            'sixth' => new ListFilterValueItem($stringable),
+        ];
+
+        $this->assertSame(
+            $items,
+            (new ListFilter($items))->in('value', false, 1.5, 2, 'three', null, $stringable)->filter()
+        );
+    }
+
+    /**
+     * @dataProvider invalidComparableFilterCases
+     * @param array<string, mixed> $filter
+     */
+    public function testComparableFiltersRejectInvalidValues(array $filter, object $item): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        ListFilter::seed($filter, [$item])->filter();
+    }
+
+    /** @return iterable<string, array{array<string, mixed>, object}> */
+    public static function invalidComparableFilterCases(): iterable
+    {
+        yield 'invalid filter argument' => [
+            ['value__in' => [['invalid']]],
+            new ListFilterValueItem('valid'),
+        ];
+        yield 'invalid item value' => [
+            ['value__in' => ['valid']],
+            new ListFilterValueItem([['invalid']]),
+        ];
+    }
+
     /**
      * @param int ...$ids
      * @return array<array-key, ListFilterItem>
@@ -124,5 +202,32 @@ final class ListFilterItem
     public function __construct(int $id)
     {
         $this->id = $id;
+    }
+}
+
+final class ListFilterValueItem
+{
+    /** @var mixed */
+    public $value;
+
+    /** @param mixed $value */
+    public function __construct($value)
+    {
+        $this->value = $value;
+    }
+}
+
+final class ListFilterStringableValue
+{
+    private string $value;
+
+    public function __construct(string $value)
+    {
+        $this->value = $value;
+    }
+
+    public function __toString(): string
+    {
+        return $this->value;
     }
 }

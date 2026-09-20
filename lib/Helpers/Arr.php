@@ -266,14 +266,15 @@ class Arr
     /**
      * Determines if all the specified set of values exist in the subject array.
      *
-     * @param array<array-key, mixed> $subject
-     * @param mixed $value
-     * @param mixed ...$values
+     * @template TValue of scalar|\Stringable|null
+     * @param array<array-key, TValue> $subject
+     * @param TValue $value
+     * @param TValue ...$values
      * @return bool
      */
     public static function hasValues(array $subject, $value, ...$values): bool
     {
-        return !empty(Arr::intersect($subject, Arr::merge([$value], $values)));
+        return !empty(Arr::intersect($subject, array_merge([$value], $values)));
     }
 
     /**
@@ -442,9 +443,11 @@ class Arr
     /**
      * Strips out duplicate items in the provided array.
      *
-     * @param array<array-key, mixed> $subject
+     * @template TKey of array-key
+     * @template TValue of scalar|\Stringable|null
+     * @param array<TKey, TValue> $subject
      *
-     * @return array<array-key, mixed>
+     * @return array<TKey, TValue>
      */
     public static function unique(array $subject): array
     {
@@ -677,13 +680,15 @@ class Arr
     /**
      * Returns an array that contains the values contained in all arrays.
      *
-     * @param array<array-key, mixed> ...$items
+     * @template TKey of array-key
+     * @template TValue of scalar|\Stringable|null
+     * @param array<TKey, TValue> ...$items
      *
-     * @return array<array-key, mixed>
+     * @return array<TKey, TValue>
      */
     public static function intersect(array ...$items): array
     {
-        return array_intersect(...self::map(func_get_args(), [Arr::class, 'wrap']));
+        return array_intersect(...array_values($items));
     }
 
     /**
@@ -701,13 +706,15 @@ class Arr
     /**
      * Returns an array that contains values only contained in a single array.
      *
-     * @param array<array-key, mixed> ...$items
+     * @template TKey of array-key
+     * @template TValue of scalar|\Stringable|null
+     * @param array<TKey, TValue> ...$items
      *
-     * @return array<array-key, mixed>
+     * @return array<TKey, TValue>
      */
     public static function diff(array ...$items): array
     {
-        return array_diff(...self::map(func_get_args(), [Arr::class, 'wrap']));
+        return array_diff(...array_values($items));
     }
 
     /**
@@ -719,7 +726,11 @@ class Arr
      */
     public static function replaceRecursive(array ...$items): array
     {
-        return array_replace_recursive(...$items);
+        if ($items === []) {
+            return [];
+        }
+
+        return array_replace_recursive(...array_values($items));
     }
 
     /**
@@ -731,7 +742,11 @@ class Arr
      */
     public static function replace(array ...$items): array
     {
-        return array_replace(...$items);
+        if ($items === []) {
+            return [];
+        }
+
+        return array_replace(...array_values($items));
     }
 
     /**

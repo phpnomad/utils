@@ -41,6 +41,47 @@ class ArrTest extends TestCase
         );
     }
 
+    public function testReplaceMethodsReturnAnEmptyArrayWithoutInputs(): void
+    {
+        $this->assertSame([], Arr::replace());
+        $this->assertSame([], Arr::replaceRecursive());
+    }
+
+    public function testReplaceMethodsHonorNamedVariadicCallOrder(): void
+    {
+        $first = ['settings' => ['color' => 'blue', 'size' => 'm'], 'enabled' => true];
+        $second = ['settings' => ['color' => 'red']];
+
+        $this->assertSame(
+            ['settings' => ['color' => 'red'], 'enabled' => true],
+            Arr::replace(first: $first, second: $second)
+        );
+        $this->assertSame(
+            ['settings' => ['color' => 'red', 'size' => 'm'], 'enabled' => true],
+            Arr::replaceRecursive(first: $first, second: $second)
+        );
+    }
+
+    public function testComparableArrayHelpersPreserveKeysAndValues(): void
+    {
+        $first = new ArrStringableValue('first');
+        $duplicate = new ArrStringableValue('first');
+        $second = new ArrStringableValue('second');
+
+        $this->assertSame(
+            ['first' => $first, 'second' => $second],
+            Arr::unique(['first' => $first, 'duplicate' => $duplicate, 'second' => $second])
+        );
+        $this->assertSame(
+            ['first' => $first],
+            Arr::intersect(['first' => $first, 'second' => $second], [$duplicate])
+        );
+        $this->assertSame(
+            ['second' => $second],
+            Arr::diff(['first' => $first, 'second' => $second], [$duplicate])
+        );
+    }
+
     public function testPluckUsesTheDefaultForScalarItems(): void
     {
         $this->assertSame(
@@ -123,5 +164,20 @@ class ArrTest extends TestCase
             'user.name',
             false,
         ];
+    }
+}
+
+final class ArrStringableValue
+{
+    private string $value;
+
+    public function __construct(string $value)
+    {
+        $this->value = $value;
+    }
+
+    public function __toString(): string
+    {
+        return $this->value;
     }
 }

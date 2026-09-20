@@ -164,7 +164,7 @@ final class ArrayProcessor
      */
     public function unique(): ArrayProcessor
     {
-        $this->subject = Arr::unique($this->subject);
+        $this->subject = Arr::unique($this->getComparableSubject());
 
         return $this;
     }
@@ -370,13 +370,16 @@ final class ArrayProcessor
     /**
      * Filters the array to only contain values contained in all provided arrays.
      *
-     * @param array<array-key, mixed> ...$items
+     * @param array<array-key, scalar|\Stringable|null> ...$items
      *
      * @return static
      */
     public function intersect(array ...$items): ArrayProcessor
     {
-        $this->subject = Arr::intersect($this->subject, ...$items);
+        $this->subject = Arr::intersect(
+            $this->getComparableSubject(),
+            ...$this->getComparableArrays($items)
+        );
 
         return $this;
     }
@@ -398,13 +401,16 @@ final class ArrayProcessor
     /**
      * Filters the array to only contain values only contained in a single array.
      *
-     * @param array<array-key, mixed> ...$items
+     * @param array<array-key, array<array-key, scalar|\Stringable|null>> $items
      *
      * @return static
      */
     public function diff(...$items): ArrayProcessor
     {
-        $this->subject = Arr::diff($this->subject, ...$items);
+        $this->subject = Arr::diff(
+            $this->getComparableSubject(),
+            ...$this->getComparableArrays($items)
+        );
 
         return $this;
     }
@@ -492,5 +498,47 @@ final class ArrayProcessor
         }
 
         return $subject;
+    }
+
+    /** @return array<array-key, scalar|\Stringable|null> */
+    private function getComparableSubject(): array
+    {
+        return $this->getComparableValues($this->subject);
+    }
+
+    /**
+     * @param array<array-key, mixed> $values
+     * @return array<array-key, scalar|\Stringable|null>
+     */
+    private function getComparableValues(array $values): array
+    {
+        $comparable = [];
+        foreach ($values as $key => $value) {
+            if (!is_scalar($value) && $value !== null && !($value instanceof \Stringable)) {
+                throw new InvalidArgumentException(
+                    'Array comparison requires every value to be scalar, null, or stringable.'
+                );
+            }
+            $comparable[$key] = $value;
+        }
+
+        return $comparable;
+    }
+
+    /**
+     * @param array<array-key, mixed> $items
+     * @return list<array<array-key, scalar|\Stringable|null>>
+     */
+    private function getComparableArrays(array $items): array
+    {
+        $comparable = [];
+        foreach ($items as $item) {
+            if (!is_array($item)) {
+                throw new InvalidArgumentException('Array comparison requires arrays of comparable values.');
+            }
+            $comparable[] = $this->getComparableValues($item);
+        }
+
+        return $comparable;
     }
 }

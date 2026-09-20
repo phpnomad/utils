@@ -94,6 +94,73 @@ class ArrayProcessorTest extends TestCase
         $this->assertSame([10, 20], $processor->toArray());
     }
 
+    public function testComparableOperationsPreserveSupportedValues(): void
+    {
+        $stringable = new ArrayProcessorStringableValue('object');
+        $values = [false, 1.5, 2, 'three', null, $stringable];
+
+        foreach ($values as $value) {
+            $unique = new ArrayProcessor([$value]);
+            $this->assertSame($unique, $unique->unique());
+            $this->assertSame([$value], $unique->toArray());
+        }
+
+        $nativeCollision = new ArrayProcessor([false, null]);
+        $nativeCollision->unique();
+        $this->assertSame([false], $nativeCollision->toArray());
+
+        $intersect = new ArrayProcessor($values);
+        $this->assertSame($intersect, $intersect->intersect($values));
+        $this->assertSame($values, $intersect->toArray());
+
+        $diff = new ArrayProcessor($values);
+        $this->assertSame($diff, $diff->diff([]));
+        $this->assertSame($values, $diff->toArray());
+    }
+
+    /** @dataProvider invalidComparableOperations */
+    public function testComparableOperationsRejectInvalidSubjectsBeforeMutation(string $operation): void
+    {
+        $processor = new ArrayProcessor(['valid', ['invalid']]);
+
+        $this->assertInvalidOperationLeavesSubject(
+            $processor,
+            static function () use ($processor, $operation): void {
+                $processor->$operation(['valid']);
+            },
+            ['valid', ['invalid']]
+        );
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function invalidComparableOperations(): iterable
+    {
+        yield 'unique' => ['unique'];
+        yield 'intersect' => ['intersect'];
+        yield 'diff' => ['diff'];
+    }
+
+    /** @dataProvider comparableOperationsWithInputs */
+    public function testComparableOperationsRejectInvalidInputsBeforeMutation(string $operation): void
+    {
+        $processor = new ArrayProcessor(['valid']);
+
+        $this->assertInvalidOperationLeavesSubject(
+            $processor,
+            static function () use ($processor, $operation): void {
+                $processor->$operation([['invalid']]);
+            },
+            ['valid']
+        );
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function comparableOperationsWithInputs(): iterable
+    {
+        yield 'intersect' => ['intersect'];
+        yield 'diff' => ['diff'];
+    }
+
     /**
      * @param callable(): void $operation
      * @param array<array-key, mixed> $expected
@@ -121,5 +188,20 @@ final class ArrayProcessorFixture
     public function __construct(string $value)
     {
         $this->value = $value;
+    }
+}
+
+final class ArrayProcessorStringableValue
+{
+    private string $value;
+
+    public function __construct(string $value)
+    {
+        $this->value = $value;
+    }
+
+    public function __toString(): string
+    {
+        return $this->value;
     }
 }

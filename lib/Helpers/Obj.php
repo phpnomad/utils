@@ -65,7 +65,10 @@ class Obj
     public static function implements(string $instance, string $implements, string ...$moreImplements): bool
     {
         $items = class_implements($instance);
-        $implements = Arr::merge([$implements], $moreImplements);
+        if ($items === false) {
+            throw new \TypeError('Unable to inspect implemented interfaces.');
+        }
+        $implements = array_merge([$implements], $moreImplements);
         $test = Arr::intersect($items, $implements);
 
         return count($test) === count($implements);

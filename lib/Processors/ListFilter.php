@@ -421,7 +421,7 @@ class ListFilter
     {
         $comparable = [];
         foreach ($values as $key => $value) {
-            if (!is_scalar($value) && $value !== null && !($value instanceof \Stringable)) {
+            if (!is_scalar($value) && $value !== null && !$this->isStringableValue($value)) {
                 throw new InvalidArgumentException(
                     "Filter '$filter' must contain only scalar, null, or stringable values."
                 );
@@ -430,6 +430,15 @@ class ListFilter
         }
 
         return $comparable;
+    }
+
+    /**
+     * @param mixed $value
+     * @phpstan-assert-if-true \Stringable $value
+     */
+    private function isStringableValue($value): bool
+    {
+        return is_object($value) && method_exists($value, '__toString');
     }
 
     /**

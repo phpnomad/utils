@@ -7,6 +7,17 @@ use PHPNomad\Utils\Helpers\Arr;
 
 class ArrTest extends TestCase
 {
+    public function testGetSupportsStringAndIntegerKeysWithoutANarrowNativeType(): void
+    {
+        $subject = [0 => 'first', 'name' => 'value'];
+
+        $this->assertSame('first', Arr::get($subject, 0));
+        $this->assertSame('value', Arr::get($subject, 'name'));
+
+        $key = (new \ReflectionMethod(Arr::class, 'get'))->getParameters()[1];
+        $this->assertFalse($key->hasType());
+    }
+
     public function testDotReturnsDefaultWhenAnIntermediateValueIsNotAnArray(): void
     {
         $this->assertSame(

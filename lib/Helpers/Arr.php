@@ -99,11 +99,11 @@ class Arr
      * Gets a value, if set. Falls back to default otherwise.
      *
      * @param array<array-key, mixed> $subject
-     * @param string $key
+     * @param array-key $key
      * @param mixed $default
      * @return mixed
      */
-    public static function get(array $subject, string $key, $default = null)
+    public static function get(array $subject, $key, $default = null)
     {
         if (isset($subject[$key])) {
             return $subject[$key];

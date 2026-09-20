@@ -95,7 +95,7 @@ class Arr
      *
      * @param array $subject
      * @param string $key
-     * @param null $default
+     * @param mixed $default
      * @return mixed
      */
     public static function get(array $subject, string $key, $default = null)

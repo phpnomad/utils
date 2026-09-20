@@ -345,8 +345,7 @@ class ListFilter
             if (!$this->isArrayOfKeys($includedKeys)) {
                 throw new InvalidArgumentException('Key inclusion filters must contain an array of integer or string keys.');
             }
-            $items = Arr::intersect($items, $includedKeys);
-            /** @var array<array-key, array-key> $items */
+            $items = $this->keepMatchingKeys($items, $includedKeys);
             unset($this->filter_args['filter_enum_key__in']);
         }
 
@@ -355,8 +354,7 @@ class ListFilter
             if (!$this->isArrayOfKeys($excludedKeys)) {
                 throw new InvalidArgumentException('Key exclusion filters must contain an array of integer or string keys.');
             }
-            $items = Arr::diff($items, $excludedKeys);
-            /** @var array<array-key, array-key> $items */
+            $items = $this->removeMatchingKeys($items, $excludedKeys);
             unset($this->filter_args['filter_enum_key__not_in']);
         }
 
@@ -380,6 +378,40 @@ class ListFilter
         }
 
         return true;
+    }
+
+    /**
+     * @param array<array-key, array-key> $items
+     * @param array<array-key, array-key> $includedKeys
+     * @return array<array-key, array-key>
+     */
+    private function keepMatchingKeys(array $items, array $includedKeys): array
+    {
+        $result = [];
+        foreach (Arr::intersect($items, $includedKeys) as $key => $item) {
+            if (is_int($item) || is_string($item)) {
+                $result[$key] = $item;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param array<array-key, array-key> $items
+     * @param array<array-key, array-key> $excludedKeys
+     * @return array<array-key, array-key>
+     */
+    private function removeMatchingKeys(array $items, array $excludedKeys): array
+    {
+        $result = [];
+        foreach (Arr::diff($items, $excludedKeys) as $key => $item) {
+            if (is_int($item) || is_string($item)) {
+                $result[$key] = $item;
+            }
+        }
+
+        return $result;
     }
 
     /**

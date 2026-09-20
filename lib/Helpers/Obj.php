@@ -35,10 +35,10 @@ class Obj
                 } catch (Throwable $e) {
                     throw new ItemNotFound("Cannot read field '$field'.", 0, $e);
                 }
-            } elseif (property_exists($value, $field)) {
-                throw new ItemNotFound("Cannot read inaccessible or uninitialized field '$field'.");
             } elseif (method_exists($value, '__get')) {
                 $value = $value->$field;
+            } elseif (property_exists($value, $field)) {
+                throw new ItemNotFound("Cannot read inaccessible or uninitialized field '$field'.");
             } else {
                 throw new ItemNotFound("Field '$field' was not found.");
             }

@@ -55,15 +55,7 @@ final class ArrayProcessor
      */
     public function flip(): ArrayProcessor
     {
-        foreach ($this->subject as $item) {
-            if (!is_int($item) && !is_string($item)) {
-                throw new InvalidArgumentException('Flipping requires every subject item to be an integer or string.');
-            }
-        }
-
-        /** @var array<array-key, int|string> $subject */
-        $subject = $this->subject;
-        $this->subject = Arr::flip($subject);
+        $this->subject = Arr::flip($this->getFlippableSubject());
 
         return $this;
     }
@@ -119,15 +111,7 @@ final class ArrayProcessor
      */
     public function hydrate(string $instance): ArrayProcessor
     {
-        foreach ($this->subject as $item) {
-            if (!is_array($item)) {
-                throw new InvalidArgumentException('Hydration requires every subject item to be an array.');
-            }
-        }
-
-        /** @var array<array-key, array<array-key, mixed>> $subject */
-        $subject = $this->subject;
-        $this->subject = Arr::hydrate($subject, $instance);
+        $this->subject = Arr::hydrate($this->getHydrationSubject(), $instance);
 
         return $this;
     }
@@ -154,30 +138,14 @@ final class ArrayProcessor
      */
     public function flatten(string $groupKey = 'group'): ArrayProcessor
     {
-        foreach ($this->subject as $item) {
-            if (!is_array($item)) {
-                throw new InvalidArgumentException('Flattening requires every subject item to be an array.');
-            }
-        }
-
-        /** @var array<array-key, array<array-key, mixed>> $subject */
-        $subject = $this->subject;
-        $this->subject = Arr::flatten($subject, $groupKey);
+        $this->subject = Arr::flatten($this->getFlattenableSubject(), $groupKey);
 
         return $this;
     }
 
     public function group(string ...$groups): ArrayProcessor
     {
-        foreach ($this->subject as $item) {
-            if (!is_array($item) && !is_object($item)) {
-                throw new InvalidArgumentException('Grouping requires every subject item to be an array or object.');
-            }
-        }
-
-        /** @var array<array-key, array<array-key, mixed>|object> $subject */
-        $subject = $this->subject;
-        $this->subject = Arr::group($subject, ...$groups);
+        $this->subject = Arr::group($this->getGroupableSubject(), ...$groups);
 
         return $this;
     }
@@ -468,5 +436,61 @@ final class ArrayProcessor
     public function toString(): string
     {
         return implode($this->separator, $this->subject);
+    }
+
+    /** @return array<array-key, int|string> */
+    private function getFlippableSubject(): array
+    {
+        $subject = [];
+        foreach ($this->subject as $key => $item) {
+            if (!is_int($item) && !is_string($item)) {
+                throw new InvalidArgumentException('Flipping requires every subject item to be an integer or string.');
+            }
+            $subject[$key] = $item;
+        }
+
+        return $subject;
+    }
+
+    /** @return array<array-key, array<array-key, mixed>> */
+    private function getHydrationSubject(): array
+    {
+        $subject = [];
+        foreach ($this->subject as $key => $item) {
+            if (!is_array($item)) {
+                throw new InvalidArgumentException('Hydration requires every subject item to be an array.');
+            }
+            $subject[$key] = $item;
+        }
+
+        return $subject;
+    }
+
+    /** @return array<array-key, array<array-key, mixed>> */
+    private function getFlattenableSubject(): array
+    {
+        $subject = [];
+        foreach ($this->subject as $key => $item) {
+            if (!is_array($item)) {
+                throw new InvalidArgumentException('Flattening requires every subject item to be an array.');
+            }
+            $subject[$key] = $item;
+        }
+
+        return $subject;
+    }
+
+    /** @return array<array-key, array<array-key, mixed>|object> */
+    private function getGroupableSubject(): array
+    {
+        $subject = [];
+        foreach ($this->subject as $key => $item) {
+            if (!is_array($item) && !is_object($item)) {
+                throw new InvalidArgumentException('Grouping requires every subject item to be an array or object.');
+            }
+            $subject[$key] = $item;
+        }
+
+        return $subject;
     }
 }

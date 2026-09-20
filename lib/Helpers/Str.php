@@ -291,9 +291,8 @@ class Str
             return '';
         }
 
-        $enumerableItems = Arr::cast($enumerableItems, 'string');
+        $enumerableItems = self::stringifyItems($enumerableItems);
         $lastItem = array_pop($enumerableItems);
-        /** @var string $lastItem */
 
         $result = $enumerableItems ? implode(', ', $enumerableItems) . ", $conjunction " . $lastItem : $lastItem;
 
@@ -302,5 +301,20 @@ class Str
         }
 
         return $result;
+    }
+
+    /**
+     * @param non-empty-array<array-key, mixed> $items
+     * @return non-empty-list<string>
+     */
+    private static function stringifyItems(array $items): array
+    {
+        $strings = [];
+        foreach ($items as $item) {
+            settype($item, 'string');
+            $strings[] = $item;
+        }
+
+        return $strings;
     }
 }

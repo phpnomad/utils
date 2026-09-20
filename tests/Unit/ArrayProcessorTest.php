@@ -80,7 +80,9 @@ class ArrayProcessorTest extends TestCase
 
         $returned = $processor->reduce(
             static function (array $ids, $item): array {
-                /** @var array{id: int} $item */
+                if (!is_array($item) || !is_int($item['id'] ?? null)) {
+                    throw new \UnexpectedValueException('Expected an integer ID.');
+                }
                 $ids[] = $item['id'];
 
                 return $ids;

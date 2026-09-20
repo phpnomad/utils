@@ -54,6 +54,21 @@ class ObjTest extends TestCase
         Obj::pluck($item, 'secret');
     }
 
+    public function testMagicGetterCanExposeAnOtherwisePrivateProperty(): void
+    {
+        $item = new class {
+            private string $secret = 'hidden';
+
+            /** @return mixed */
+            public function __get(string $name)
+            {
+                return $name === 'secret' ? $this->secret : null;
+            }
+        };
+
+        $this->assertSame('hidden', Obj::pluck($item, 'secret'));
+    }
+
     public function testScalarIntermediateThrowsItemNotFound(): void
     {
         $item = (object) ['nested' => 42];

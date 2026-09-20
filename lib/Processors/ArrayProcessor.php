@@ -104,7 +104,7 @@ final class ArrayProcessor
     /**
      * Create an array of new instances given arguments to pass
      *
-     * @param $instance string The instance to create
+     * @param class-string $instance The instance to create
      *
      * @return $this
      */
@@ -296,8 +296,8 @@ final class ArrayProcessor
     }
 
     /**
-     * @param callable $callback
-     * @param mixed $initial
+     * @param callable(array<array-key, mixed>, mixed): array<array-key, mixed> $callback
+     * @param array<array-key, mixed> $initial
      *
      * @return $this
      */

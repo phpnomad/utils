@@ -7,6 +7,40 @@ use PHPNomad\Utils\Helpers\Arr;
 
 class ArrTest extends TestCase
 {
+    public function testDotReturnsDefaultWhenAnIntermediateValueIsNotAnArray(): void
+    {
+        $this->assertSame(
+            'missing',
+            Arr::dot(['user' => 'alex'], 'user.name', 'missing')
+        );
+        $this->assertSame(
+            'missing',
+            Arr::dot(['user' => 42], 'user.name', 'missing')
+        );
+    }
+
+    public function testReplaceCombinesArraysWithoutNestingTheArgumentList(): void
+    {
+        $this->assertSame(
+            ['settings' => ['color' => 'red'], 'enabled' => true],
+            Arr::replace(
+                ['settings' => ['color' => 'blue', 'size' => 'm'], 'enabled' => true],
+                ['settings' => ['color' => 'red']]
+            )
+        );
+    }
+
+    public function testReplaceRecursiveCombinesNestedArrays(): void
+    {
+        $this->assertSame(
+            ['settings' => ['color' => 'red', 'size' => 'm'], 'enabled' => true],
+            Arr::replaceRecursive(
+                ['settings' => ['color' => 'blue', 'size' => 'm'], 'enabled' => true],
+                ['settings' => ['color' => 'red']]
+            )
+        );
+    }
+
     /**
      * @dataProvider hasDottedPathCases
      * @param array<string, mixed> $subject

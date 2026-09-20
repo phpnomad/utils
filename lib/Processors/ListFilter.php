@@ -354,10 +354,9 @@ class ListFilter
     public function filter(): array
     {
         $results = [];
-        $actualLimit = $this->limit ?? 0 + $this->offset ?? 0;
-
-        if(!$actualLimit){
-            $actualLimit = null;
+        $actualLimit = null;
+        if ($this->limit !== null) {
+            $actualLimit = $this->limit + ($this->offset ?? 0);
         }
 
         foreach ($this->filterItemKeys() as $item_key) {
@@ -371,13 +370,13 @@ class ListFilter
                 $results[$item_key] = $item;
             }
 
-            if($actualLimit === count($results)){
+            if ($actualLimit !== null && $actualLimit === count($results)) {
                 break;
             }
         }
 
-        if(!is_null($this->offset)){
-            $results = Arr::after($results, $this->offset - 1);
+        if ($this->offset !== null) {
+            $results = Arr::after($results, $this->offset);
         }
 
         return $results;

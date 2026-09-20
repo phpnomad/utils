@@ -39,10 +39,12 @@ class Arr
     /**
      * Applies the callback to the elements of the given array.
      *
-     * @param array<array-key, mixed> $subject
-     * @param callable $callback
-     * @param mixed $initial
-     * @return mixed
+     * @template TValue
+     * @template TAccumulator
+     * @param array<array-key, TValue> $subject
+     * @param callable(TAccumulator, TValue): TAccumulator $callback
+     * @param TAccumulator $initial
+     * @return TAccumulator
      */
     public static function reduce(array $subject, callable $callback, $initial)
     {
@@ -113,10 +115,11 @@ class Arr
     /**
      * Retrieve items after the specified array position.
      *
-     * @param array<array-key, mixed> $subject the array
+     * @template TValue
+     * @param array<array-key, TValue> $subject the array
      * @param int $position The position to retrieve after
      *
-     * @return array<array-key, mixed>
+     * @return array<array-key, TValue>
      */
     public static function after(array $subject, int $position): array
     {
@@ -224,11 +227,11 @@ class Arr
     public static function dot(array $subject, string $dot, $default = null)
     {
         foreach (explode('.', $dot) as $item) {
-            if (!isset($subject[$item])) {
+            if (!is_array($subject) || !isset($subject[$item])) {
                 return $default;
-            } else {
-                $subject = $subject[$item];
             }
+
+            $subject = $subject[$item];
         }
 
         return $subject;
@@ -425,7 +428,7 @@ class Arr
         $result = [];
 
         foreach ($subject as $subjectKey => $value) {
-            if (Arr::isAssociative(Arr::wrap($value))) {
+            if (is_array($value) && Arr::isAssociative($value)) {
                 $result[] = Arr::merge([$key => $subjectKey], $value);
             } else {
                 $result[] = Arr::merge([$key => $subjectKey], [$valueKey => $value]);
@@ -468,14 +471,10 @@ class Arr
      */
     public static function containsSameData($input, ...$inputs): bool
     {
-        $inputs = Arr::merge([$input], $inputs);
-        $a = array_shift($inputs);
-        $a = static::normalize($a);
+        $a = static::normalize($input);
 
-        while (!empty($inputs)) {
-            $b = array_shift($inputs);
-
-            $b = static::normalize($b);
+        foreach ($inputs as $inputToCompare) {
+            $b = static::normalize($inputToCompare);
 
             if ($a !== $b) {
                 return false;
@@ -654,9 +653,7 @@ class Arr
         foreach ($array as $key => $value) {
             // Normalize recursively.
             if (is_array($value) && true === $recursive) {
-                $args = func_get_args();
-                $args[0] = $value;
-                $array[$key] = self::normalize(...$args);
+                $array[$key] = self::normalize($value, $convertClosures, $recursive);
             }
 
             // If closures need converted, and this is a closure, transform this into an identifiable string.
@@ -721,7 +718,7 @@ class Arr
      */
     public static function replaceRecursive(array ...$items): array
     {
-        return array_replace_recursive($items);
+        return array_replace_recursive(...$items);
     }
 
     /**
@@ -733,7 +730,7 @@ class Arr
      */
     public static function replace(array ...$items): array
     {
-        return array_replace($items);
+        return array_replace(...$items);
     }
 
     /**
@@ -745,7 +742,7 @@ class Arr
      */
     public static function first(array $items, $default = null)
     {
-        return Arr::get(array_values($items), 0, $default);
+        return Arr::get(array_values($items), '0', $default);
     }
 
     /**
@@ -759,6 +756,6 @@ class Arr
     {
         $items = array_values($items);
 
-        return Arr::get($items, count($items) - 1, $default);
+        return Arr::get($items, (string) (count($items) - 1), $default);
     }
 }

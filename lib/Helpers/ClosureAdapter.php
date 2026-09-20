@@ -14,7 +14,7 @@ class ClosureAdapter
      *
      * @param Closure $data
      *
-     * @return array
+     * @return array{string, array<string, mixed>}
      * @throws ReflectionException
      */
     public static function getClosureData(Closure $data): array

@@ -10,11 +10,15 @@ use PHPNomad\Utils\Helpers\Obj;
 class ListFilter
 {
 
+    /** @var array<string, mixed> */
     protected array $filter_args = [];
+
+    /** @var array<array-key, object> */
     protected array $items;
     protected ?int $limit = null;
     protected ?int $offset = null;
 
+    /** @param array<array-key, object> $items */
     public function __construct(array $items)
     {
         $this->items = $items;
@@ -83,7 +87,7 @@ class ListFilter
     /**
      * Sets the query to only include items that are not an of the provided instances.
      *
-     * @param array $values The values to filter.
+     * @param class-string ...$values The values to filter.
      *
      * @return $this
      */
@@ -97,7 +101,7 @@ class ListFilter
     /**
      * Sets the query to only include items that are an instance of all the provided instances.
      *
-     * @param array $values The values to filter.
+     * @param class-string ...$values The values to filter.
      *
      * @return $this
      */
@@ -111,7 +115,7 @@ class ListFilter
     /**
      * Sets the query to only include items that are instance of any the provided instances.
      *
-     * @param array $values The values to filter.
+     * @param class-string ...$values The values to filter.
      *
      * @return $this
      */
@@ -140,7 +144,7 @@ class ListFilter
      * Sets the query to filter out items whose field has any of the provided values.
      *
      * @param string $field The field to check against.
-     * @param array $values The values to filter.
+     * @param mixed ...$values The values to filter.
      *
      * @return $this
      */
@@ -155,7 +159,7 @@ class ListFilter
      * Sets the query to filter out items whose field does not have all the provided values.
      *
      * @param string $field The field to check against.
-     * @param array $values The values to filter.
+     * @param mixed ...$values The values to filter.
      *
      * @return $this
      */
@@ -170,7 +174,7 @@ class ListFilter
      * Sets the query to filter out items whose field does not have any of the provided values.
      *
      * @param string $field The field to check against.
-     * @param array $values The values to filter.
+     * @param mixed ...$values The values to filter.
      *
      * @return $this
      */
@@ -200,7 +204,7 @@ class ListFilter
     /**
      * Sets the query to filter out items whose key has any of the provided values.
      *
-     * @param array $values The values to filter.
+     * @param array-key ...$values The values to filter.
      *
      * @return $this
      */
@@ -214,7 +218,7 @@ class ListFilter
     /**
      * Sets the query to filter out items whose key does not have all the provided values.
      *
-     * @param array $values The values to filter.
+     * @param array-key ...$values The values to filter.
      *
      * @return $this
      */
@@ -226,9 +230,9 @@ class ListFilter
     }
 
     /**
-     * @param $key
+     * @param string $key
      *
-     * @return array
+     * @return array{field: string, type: string}
      */
     protected function prepareField($key): array
     {
@@ -322,7 +326,7 @@ class ListFilter
     /**
      * Pre-filters the list of items.
      *
-     * @return array
+     * @return array<array-key, array-key>
      */
     protected function filterItemKeys(): array
     {
@@ -404,13 +408,17 @@ class ListFilter
     }
 
     /**
-     * @return array
+     * @return array<string, mixed>
      */
     public function getFilterArgs(): array
     {
         return $this->filter_args;
     }
 
+    /**
+     * @param array<string, mixed> $filterArgs
+     * @param array<array-key, object> $inputData
+     */
     public static function seed(array $filterArgs, array $inputData): ListFilter
     {
         $new = new static($inputData);

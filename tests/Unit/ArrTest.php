@@ -9,12 +9,14 @@ class ArrTest extends TestCase
 {
     /**
      * @dataProvider hasDottedPathCases
+     * @param array<string, mixed> $subject
      */
     public function testHasWalksDottedPaths(array $subject, string $dot, bool $expected): void
     {
         $this->assertSame($expected, Arr::has($subject, $dot));
     }
 
+    /** @return iterable<string, array{array<string, mixed>, string, bool}> */
     public static function hasDottedPathCases(): iterable
     {
         yield 'single key present' => [

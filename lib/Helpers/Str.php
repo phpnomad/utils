@@ -10,9 +10,9 @@ class Str
     /**
      * Makes a word plural.
      *
-     * @param $singular
-     * @param $count
-     * @param $plural
+     * @param string $singular
+     * @param int|float $count
+     * @param string $plural
      * @return string
      */
     public static function pluarize($singular, $count, $plural = 's'): string
@@ -39,6 +39,7 @@ class Str
     public static function camelCaseToDashCase(string $subject): string
     {
         $subject = preg_replace('/[A-Z]/', '-$0', $subject);
+        /** @var string $subject A fixed valid expression always returns a string. */
         $subject = strtolower($subject);
 
         return ltrim($subject, '-');
@@ -92,6 +93,10 @@ class Str
         }
     }
 
+    /**
+     * @param string $haystack
+     * @param string $needle
+     */
     public static function contains($haystack, $needle): bool
     {
         return strpos($haystack, $needle) !== false;
@@ -254,6 +259,7 @@ class Str
         return substr($subject, 0, $pos);
     }
 
+    /** @param mixed ...$args */
     public static function getBuffer(callable $callback, ...$args): string
     {
         ob_start();
@@ -264,7 +270,7 @@ class Str
     /**
      * Join an array of items into a string using a specified conjunction.
      *
-     * @param array $enumerableItems Array of items to be enumerated
+     * @param array<array-key, mixed> $enumerableItems Array of items to be enumerated
      * @param string $conjunction Conjunction used for joining the items (default: 'and')
      *
      * @return string Joined string with enumerated items

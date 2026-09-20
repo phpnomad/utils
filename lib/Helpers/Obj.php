@@ -10,6 +10,7 @@ class Obj
     /**
      * Gets a field from an object. Attempts to call get_field, and the fields accessor.
      *
+     * @return mixed
      * @throws ItemNotFound
      */
     public static function pluck(object $value, string $fields)

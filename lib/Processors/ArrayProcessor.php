@@ -8,14 +8,20 @@ use ReflectionException;
 final class ArrayProcessor
 {
 
+    /** @var array<array-key, mixed> */
     protected array $subject = [];
     private string $separator = ',';
 
+    /** @param array<array-key, mixed> $subject */
     public function __construct(array $subject = [])
     {
         $this->subject = $subject;
     }
 
+    /**
+     * @param mixed $default
+     * @return $this
+     */
     public function pluck(string $key, $default = null)
     {
         $this->subject = Arr::pluck($this->subject, $key, $default);
@@ -24,7 +30,7 @@ final class ArrayProcessor
     }
 
     /**
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function toArray(): array
     {
@@ -165,7 +171,7 @@ final class ArrayProcessor
     /**
      * Merges the provided arrays with the array that is being processed.
      *
-     * @param array ...$defaults
+     * @param array<array-key, mixed> ...$defaults
      *
      * @return $this
      */
@@ -179,7 +185,7 @@ final class ArrayProcessor
     /**
      * Combines arrays into a single array, with each item overriding items from the previous array.
      *
-     * @param array ...$items
+     * @param array<array-key, mixed> ...$items
      *
      * @return $this
      */
@@ -193,7 +199,7 @@ final class ArrayProcessor
     /**
      * Combines arrays into a single array, with each item overriding items from the previous array.
      *
-     * @param array ...$items
+     * @param array<array-key, mixed> ...$items
      *
      * @return $this
      */
@@ -236,8 +242,8 @@ final class ArrayProcessor
     /**
      * Recursively sorts, and optionally mutates an array of arrays.
      *
-     * @type bool $convertClosures If true, closures will be converted to an identifiable string. Default true.
-     * @type bool $recursive if true, this function will normalize recursively, manipulating sub-arrays.
+     * @param bool $convertClosures If true, closures will be converted to an identifiable string. Default true.
+     * @param bool $recursive if true, this function will normalize recursively, manipulating sub-arrays.
      *
      * @throws ReflectionException
      */
@@ -363,7 +369,7 @@ final class ArrayProcessor
     /**
      * Filters the array to only contain values contained in all provided arrays.
      *
-     * @param array ...$items
+     * @param array<array-key, mixed> ...$items
      *
      * @return static
      */
@@ -377,7 +383,7 @@ final class ArrayProcessor
     /**
      * Filters the array to only contain values contained in all provided arrays.
      *
-     * @param array ...$items
+     * @param array<array-key, mixed> ...$items
      *
      * @return static
      */
@@ -391,7 +397,7 @@ final class ArrayProcessor
     /**
      * Filters the array to only contain values only contained in a single array.
      *
-     * @param array ...$items
+     * @param array<array-key, mixed> ...$items
      *
      * @return static
      */

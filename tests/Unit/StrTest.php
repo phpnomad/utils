@@ -22,6 +22,7 @@ class StrTest extends TestCase
         $this->assertNull(Str::basename(null));
         $this->assertNull(Str::basename(123));
         $this->assertNull(Str::basename('path/to/file.php', null));
+        $this->assertNull(Str::basename('path/to/file.php', ''));
     }
 
     public function testBasenamePreservesValidStringBehavior(): void

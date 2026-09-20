@@ -213,7 +213,7 @@ class Str
             return null;
         }
         if ($divider === '') {
-            throw new \ValueError('explode(): Argument #1 ($separator) cannot be empty');
+            return null;
         }
 
         $items = explode($divider, $subject);

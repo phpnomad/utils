@@ -1,7 +1,6 @@
 {
     "name": "phpnomad/utils",
     "description": "",
-    "version": "1.0.4",
     "type": "library",
     "homepage": "https://github.com/phpnomad/core",
     "readme": "README.md",
@@ -12,11 +11,15 @@
     "autoload": {
         "psr-4": {
             "PHPNomad\\Utils\\": "lib/"
-        }
+        },
+        "classmap": [
+            "lib/Exceptions/"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
-            "PHPNomad\\Utils\\Tests\\": "tests/"
+            "PHPNomad\\Core\\Tests\\": "tests/",
+            "PHPNomad\\Tests\\Unit\\": "tests/Unit/"
         }
     },
     "authors": [
@@ -26,7 +29,11 @@
         }
     ],
     "require-dev": {
-        "phpnomad/tests": "^0.1.0 || ^0.3.0"
+        "doctrine/instantiator": "^1.5",
+        "myclabs/deep-copy": ">=1.13.4 <1.14",
+        "phpnomad/tests": "^0.1.0 || ^0.3.0",
+        "phpunit/phpunit": "^9.6.33",
+        "symfony/process": "^5.4.51"
     },
     "config": {
         "allow-plugins": {

@@ -23,10 +23,13 @@ class Arr
     /**
      * Applies the callback to the elements of the given array.
      *
-     * @param array $subject The array to apply the callback to.
-     * @param callable $callback The callback.
+     * @template TKey of array-key
+     * @template TValue
+     * @template TResult
+     * @param array<TKey, TValue> $subject The array to apply the callback to.
+     * @param callable(TValue): TResult $callback The callback.
      *
-     * @return array
+     * @return array<TKey, TResult>
      */
     public static function map(array $subject, callable $callback): array
     {
@@ -36,10 +39,12 @@ class Arr
     /**
      * Applies the callback to the elements of the given array.
      *
-     * @param array $subject
-     * @param callable $callback
-     * @param mixed $initial
-     * @return mixed
+     * @template TValue
+     * @template TAccumulator
+     * @param array<array-key, TValue> $subject
+     * @param callable(TAccumulator, TValue): TAccumulator $callback
+     * @param TAccumulator $initial
+     * @return TAccumulator
      */
     public static function reduce(array $subject, callable $callback, $initial)
     {
@@ -49,8 +54,8 @@ class Arr
     /**
      * Filters out items that are not null.
      *
-     * @param array $subject
-     * @return array
+     * @param array<array-key, mixed> $subject
+     * @return array<array-key, mixed>
      */
     public static function whereNotNull(array $subject): array
     {
@@ -60,8 +65,8 @@ class Arr
     /**
      * Filters out items that are not null.
      *
-     * @param array $subject
-     * @return array
+     * @param array<array-key, mixed> $subject
+     * @return array<array-key, mixed>
      */
     public static function whereNotEmpty(array $subject): array
     {
@@ -71,10 +76,10 @@ class Arr
     /**
      * Maps values, retaining keys if the array is associative.
      *
-     * @param array $subject
+     * @param array<array-key, mixed> $subject
      * @param callable $callback
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public static function each(array $subject, callable $callback): array
     {
@@ -93,12 +98,12 @@ class Arr
     /**
      * Gets a value, if set. Falls back to default otherwise.
      *
-     * @param array $subject
-     * @param string $key
-     * @param null $default
+     * @param array<array-key, mixed> $subject
+     * @param array-key $key
+     * @param mixed $default
      * @return mixed
      */
-    public static function get(array $subject, string $key, $default = null)
+    public static function get(array $subject, $key, $default = null)
     {
         if (isset($subject[$key])) {
             return $subject[$key];
@@ -110,10 +115,11 @@ class Arr
     /**
      * Retrieve items after the specified array position.
      *
-     * @param array $subject the array
+     * @template TValue
+     * @param array<array-key, TValue> $subject the array
      * @param int $position The position to retrieve after
      *
-     * @return array
+     * @return array<array-key, TValue>
      */
     public static function after(array $subject, int $position): array
     {
@@ -123,14 +129,15 @@ class Arr
     /**
      * Retrieve items before the specified array position.
      *
-     * @param array $subject the array
+     * @template TValue
+     * @param array<array-key, TValue> $subject the array
      * @param int $position The position to retrieve before
      *
-     * @return array
+     * @return array<array-key, TValue>
      */
     public static function before(array $subject, int $position): array
     {
-        return Arr::diff(Arr::after($subject, $position), $subject);
+        return array_slice($subject, 0, $position);
     }
 
     /**
@@ -140,10 +147,10 @@ class Arr
      * current value from <b>array</b> is returned into
      * the result array.
      *
-     * @param array $subject The items to filter
+     * @param array<array-key, mixed> $subject The items to filter
      * @param callable $callback
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public static function filter(array $subject, callable $callback): array
     {
@@ -153,9 +160,9 @@ class Arr
     /**
      * Finds a value based on a callback. Returns default value when not found.
      *
-     * @param array $subject
+     * @param array<array-key, mixed> $subject
      * @param callable $callback
-     * @param $default
+     * @param mixed $default
      * @return mixed|null
      */
     public static function find(array $subject, callable $callback, $default = null)
@@ -170,6 +177,10 @@ class Arr
         return $default;
     }
 
+    /**
+     * @param array<array-key, mixed> $subject
+     * @return array-key|null
+     */
     public static function findKey(array $subject, callable $callback)
     {
         foreach ($subject as $key => $item) {
@@ -185,9 +196,9 @@ class Arr
     /**
      * Returns the values of the array.
      *
-     * @param array $subject
+     * @param array<array-key, mixed> $subject
      *
-     * @return array
+     * @return list<mixed>
      */
     public static function values(array $subject): array
     {
@@ -197,9 +208,9 @@ class Arr
     /**
      * Returns the keys of the array.
      *
-     * @param array $subject
+     * @param array<array-key, mixed> $subject
      *
-     * @return array
+     * @return list<array-key>
      */
     public static function keys(array $subject): array
     {
@@ -209,19 +220,19 @@ class Arr
     /**
      * Retrieves an item from a dot-based syntax, returning the default value if not set.
      *
-     * @param array $subject
+     * @param array<array-key, mixed> $subject
      * @param string $dot
-     * @param null $default
+     * @param mixed $default
      * @return mixed
      */
     public static function dot(array $subject, string $dot, $default = null)
     {
         foreach (explode('.', $dot) as $item) {
-            if (!isset($subject[$item])) {
+            if (!is_array($subject) || !isset($subject[$item])) {
                 return $default;
-            } else {
-                $subject = $subject[$item];
             }
+
+            $subject = $subject[$item];
         }
 
         return $subject;
@@ -235,7 +246,7 @@ class Arr
      * is unset — so probing a deeper path than the data supports is safe,
      * never a TypeError.
      *
-     * @param array $subject
+     * @param array<array-key, mixed> $subject
      * @param string $dot
      * @return bool
      */
@@ -255,22 +266,23 @@ class Arr
     /**
      * Determines if all the specified set of values exist in the subject array.
      *
-     * @param array $subject
-     * @param $value
-     * @param ...$values
+     * @template TValue of scalar|\Stringable|null
+     * @param array<array-key, TValue> $subject
+     * @param TValue $value
+     * @param TValue ...$values
      * @return bool
      */
     public static function hasValues(array $subject, $value, ...$values): bool
     {
-        return !empty(Arr::intersect($subject, Arr::merge([$value], $values)));
+        return !empty(Arr::intersect($subject, array_merge([$value], $values)));
     }
 
     /**
      * Removes the specified item from the array, if it exists.
      *
-     * @param array $subject
-     * @param array-key $key
-     * @return array
+     * @param array<array-key, mixed> $subject
+     * @param array-key|float $key PHP coerces float keys to integers.
+     * @return array<array-key, mixed>
      */
     public static function remove(array $subject, $key): array
     {
@@ -284,9 +296,9 @@ class Arr
     /**
      * Force an item to be an array, even if it is not an array.
      *
-     * @param $item mixed The item to force into an array
+     * @param mixed $item The item to force into an array
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public static function wrap($item)
     {
@@ -300,10 +312,10 @@ class Arr
     /**
      * Create an array of new instances given arguments to pass
      *
-     * @param $array    array The list of items to instantiate
-     * @param $instance string The instance to create
+     * @param array<array-key, array<array-key, mixed>> $array The list of items to instantiate
+     * @param class-string $instance The instance to create
      *
-     * @return array
+     * @return list<object>
      */
     public static function hydrate(array $array, string $instance): array
     {
@@ -332,9 +344,10 @@ class Arr
      *   ['group' => 'group-2', 'key' => 'another-value', 'another' => 'value']
      * ]
      *
-     * @param array $subject The array to flatten
+     * @param array<array-key, array<array-key, mixed>> $subject The array to flatten
      * @param string $groupKey The key to use for the group identifier.
      *
+     * @return list<array<array-key, mixed>>
      */
     public static function flatten(array $subject, string $groupKey = 'group'): array
     {
@@ -353,9 +366,9 @@ class Arr
     /**
      * Groups items in an array based on the group keys that all have matching values.
      *
-     * @param array<object|array> $subject The array to group.
+     * @param array<array-key, object|array<array-key, mixed>> $subject The array to group.
      * @param string ...$groupKeys The keys or property names to group by.
-     * @return array An array of arrays, each containing items grouped by the specified keys.
+     * @return list<array<array-key, object|array<array-key, mixed>>> An array of grouped items.
      */
     public static function group(array $subject, string ...$groupKeys): array
     {
@@ -406,18 +419,18 @@ class Arr
     /**
      * Updates the array to contain a key equal to the array's key value.
      *
-     * @param array $subject
+     * @param array<array-key, mixed> $subject
      * @param string $key
      * @param string $valueKey
      *
-     * @return array
+     * @return list<array<array-key, mixed>>
      */
     public static function toIndexed(array $subject, string $key = 'key', string $valueKey = 'value'): array
     {
         $result = [];
 
         foreach ($subject as $subjectKey => $value) {
-            if (Arr::isAssociative(Arr::wrap($value))) {
+            if (is_array($value) && Arr::isAssociative($value)) {
                 $result[] = Arr::merge([$key => $subjectKey], $value);
             } else {
                 $result[] = Arr::merge([$key => $subjectKey], [$valueKey => $value]);
@@ -430,9 +443,11 @@ class Arr
     /**
      * Strips out duplicate items in the provided array.
      *
-     * @param array $subject
+     * @template TKey of array-key
+     * @template TValue of scalar|\Stringable|null
+     * @param array<TKey, TValue> $subject
      *
-     * @return array
+     * @return array<TKey, TValue>
      */
     public static function unique(array $subject): array
     {
@@ -442,7 +457,7 @@ class Arr
     /**
      * Sorts an array by the keys.
      *
-     * @param array $subject
+     * @param array<array-key, mixed> $subject
      *
      * @return void
      */
@@ -454,20 +469,16 @@ class Arr
     /**
      * Check if the specified arrays contain the same data regardless of order.
      *
-     * @param array $input
-     * @param array ...$inputs
+     * @param array<array-key, mixed> $input
+     * @param array<array-key, mixed> ...$inputs
      * @return bool
      */
     public static function containsSameData($input, ...$inputs): bool
     {
-        $inputs = Arr::merge([$input], $inputs);
-        $a = array_shift($inputs);
-        $a = static::normalize($a);
+        $a = static::normalize($input);
 
-        while (!empty($inputs)) {
-            $b = array_shift($inputs);
-
-            $b = static::normalize($b);
+        foreach ($inputs as $inputToCompare) {
+            $b = static::normalize($inputToCompare);
 
             if ($a !== $b) {
                 return false;
@@ -480,7 +491,7 @@ class Arr
     /**
      * Sorts an array.
      *
-     * @param array $subject The item to sort
+     * @param array<array-key, mixed> $subject The item to sort
      * @param callable|int $method The method. Can be any supported flag documented in PHP's asort, or a sorting
      *                              callback.
      * @param string $direction - can be "asc", "desc", or "rand"
@@ -499,9 +510,9 @@ class Arr
     /**
      * Merges arrays together.
      *
-     * @param array ...$args
+     * @param array<array-key, mixed> ...$args
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public static function merge(array ...$args): array
     {
@@ -511,10 +522,10 @@ class Arr
     /**
      * Reverses the order of the items in the array.
      *
-     * @param array $subject The input array.
+     * @param array<array-key, mixed> $subject The input array.
      * @param bool $preserveKeys If set to true keys are preserved.
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public static function reverse(array $subject, bool $preserveKeys = true): array
     {
@@ -524,11 +535,11 @@ class Arr
     /**
      * Recursively plucks values from a set of items.
      *
-     * @param object[]|array[] $items The list of items.
+     * @param array<array-key, mixed> $items The list of items.
      * @param string $key The key that the value is set against.
      * @param mixed $default The default value to use when the value is not set.
      *
-     * @return array Array of values plucked from the list.
+     * @return array<array-key, mixed> Array of values plucked from the list.
      */
     public static function pluck(array $items, string $key, $default = null): array
     {
@@ -541,7 +552,7 @@ class Arr
                     $result[$id] = $default;
                     continue;
                 }
-            } elseif (Arr::isAssociative($item)) {
+            } elseif (is_array($item) && Arr::isAssociative($item)) {
                 $result[$id] = self::get($item, $key, $default);
             } elseif (is_array($item)) {
                 $result[$id] = array_merge($result, self::pluck($item, $key, $default));
@@ -556,10 +567,10 @@ class Arr
     /**
      * Cast all items in the array to the specified type.
      *
-     * @param array $items
+     * @param array<array-key, mixed> $items
      * @param string $type
      *
-     * @return array
+     * @return list<mixed>
      */
     public static function cast(array $items, string $type): array
     {
@@ -575,7 +586,7 @@ class Arr
     /**
      * Returns true if this array is an associative array.
      *
-     * @param array $items
+     * @param array<array-key, mixed> $items
      *
      * @return bool
      */
@@ -593,7 +604,7 @@ class Arr
     /**
      * Adds items to the beginning of the array.
      *
-     * @param array $array array that the item should be prepended to.
+     * @param mixed $array Item that should be converted to an array and prepended to.
      * @param mixed ...$items Items to add
      *
      * @return void
@@ -607,7 +618,7 @@ class Arr
     /**
      * Adds items to the end of the array.
      *
-     * @param array $array array that the item should be prepended to.
+     * @param mixed $array Item that should be converted to an array and appended to.
      * @param mixed ...$items Items to add
      *
      * @return void
@@ -620,7 +631,11 @@ class Arr
         }
     }
 
-    public static function flip($array): array
+    /**
+     * @param array<array-key, int|string> $array
+     * @return array<int|string, array-key>
+     */
+    public static function flip(array $array): array
     {
         return array_flip($array);
     }
@@ -628,12 +643,12 @@ class Arr
     /**
      * Recursively sorts, and optionally mutates an array of arrays.
      *
-     * @param array $array The array to sort.
+     * @param array<array-key, mixed> $array The array to sort.
      *
-     * @type bool $convertClosures If true, closures will be converted to an identifiable string. Default true.
-     * @type bool $recursive if true, this function will normalize recursively, manipulating sub-arrays.
+     * @param bool $convertClosures If true, closures will be converted to an identifiable string. Default true.
+     * @param bool $recursive if true, this function will normalize recursively, manipulating sub-arrays.
      *
-     * @return array The normalized array
+     * @return array<array-key, mixed> The normalized array
      * @throws \ReflectionException
      */
     public static function normalize(array $array, $convertClosures = true, $recursive = true): array
@@ -642,9 +657,7 @@ class Arr
         foreach ($array as $key => $value) {
             // Normalize recursively.
             if (is_array($value) && true === $recursive) {
-                $args = func_get_args();
-                $args[0] = $value;
-                $array[$key] = self::normalize(...$args);
+                $array[$key] = self::normalize($value, $convertClosures, $recursive);
             }
 
             // If closures need converted, and this is a closure, transform this into an identifiable string.
@@ -667,21 +680,23 @@ class Arr
     /**
      * Returns an array that contains the values contained in all arrays.
      *
-     * @param array ...$items
+     * @template TKey of array-key
+     * @template TValue of scalar|\Stringable|null
+     * @param array<TKey, TValue> ...$items
      *
-     * @return array
+     * @return array<TKey, TValue>
      */
     public static function intersect(array ...$items): array
     {
-        return array_intersect(...self::map(func_get_args(), [Arr::class, 'wrap']));
+        return array_intersect(...array_values($items));
     }
 
     /**
      * Returns an array that contains the values contained in all arrays.
      *
-     * @param array ...$items
+     * @param array<array-key, mixed> ...$items
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public static function intersectKeys(array ...$items): array
     {
@@ -691,62 +706,72 @@ class Arr
     /**
      * Returns an array that contains values only contained in a single array.
      *
-     * @param array ...$items
+     * @template TKey of array-key
+     * @template TValue of scalar|\Stringable|null
+     * @param array<TKey, TValue> ...$items
      *
-     * @return array
+     * @return array<TKey, TValue>
      */
     public static function diff(array ...$items): array
     {
-        return array_diff(...self::map(func_get_args(), [Arr::class, 'wrap']));
+        return array_diff(...array_values($items));
     }
 
     /**
      * Combines arrays into a single array, with each item overriding items from the previous array.
      *
-     * @param array ...$items
+     * @param array<array-key, mixed> ...$items
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public static function replaceRecursive(array ...$items): array
     {
-        return array_replace_recursive($items);
+        if ($items === []) {
+            return [];
+        }
+
+        return array_replace_recursive(...array_values($items));
     }
 
     /**
      * Combines arrays into a single array, with each item overriding items from the previous array.
      *
-     * @param array ...$items
+     * @param array<array-key, mixed> ...$items
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public static function replace(array ...$items): array
     {
-        return array_replace($items);
+        if ($items === []) {
+            return [];
+        }
+
+        return array_replace(...array_values($items));
     }
 
     /**
      * Gets the first value from the array.
      *
-     * @param array $items
-     * @param null $default
+     * @param array<array-key, mixed> $items
+     * @param mixed $default
      * @return mixed
      */
     public static function first(array $items, $default = null)
     {
-        return Arr::get(array_values($items), 0, $default);
+        return Arr::get(array_values($items), '0', $default);
     }
 
     /**
      * Gets the first value from the array.
      *
-     * @param array $items
-     * @param null $default
+     * @param array<array-key, mixed> $items
+     * @param mixed $default
      * @return mixed
      */
     public static function last(array $items, $default = null)
     {
         $items = array_values($items);
 
-        return Arr::get($items, count($items) - 1, $default);
+        return Arr::get($items, (string) (count($items) - 1), $default);
     }
 }

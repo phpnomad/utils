@@ -10,9 +10,9 @@ class Str
     /**
      * Makes a word plural.
      *
-     * @param $singular
-     * @param $count
-     * @param $plural
+     * @param string $singular
+     * @param int|float $count
+     * @param string $plural
      * @return string
      */
     public static function pluarize($singular, $count, $plural = 's'): string
@@ -38,7 +38,7 @@ class Str
 
     public static function camelCaseToDashCase(string $subject): string
     {
-        $subject = preg_replace('/[A-Z]/', '-$0', $subject);
+        $subject = preg_replace('/[A-Z]/', '-$0', $subject) ?? $subject;
         $subject = strtolower($subject);
 
         return ltrim($subject, '-');
@@ -70,6 +70,11 @@ class Str
      */
     public static function createHash($data, ?string $key = null): string
     {
+        // Convert closures before the generic object branch erases their source and captures.
+        if ($data instanceof Closure) {
+            $data = ClosureAdapter::getClosureData($data);
+        }
+
         // If object, convert to array.
         if (is_object($data)) {
             $data = (array)$data;
@@ -80,11 +85,6 @@ class Str
             $data = Arr::normalize($data);
         }
 
-        // Convert closures
-        if ($data instanceof Closure) {
-            $data = ClosureAdapter::getClosureData($data);
-        }
-
         if (!$key) {
             return hash('md5', serialize($data));
         } else {
@@ -92,6 +92,10 @@ class Str
         }
     }
 
+    /**
+     * @param string $haystack
+     * @param string $needle
+     */
     public static function contains($haystack, $needle): bool
     {
         return strpos($haystack, $needle) !== false;
@@ -199,8 +203,19 @@ class Str
         return $prepend . $subject;
     }
 
+    /**
+     * @param mixed $subject
+     * @param mixed $divider
+     */
     public static function basename($subject, $divider = '/'): ?string
     {
+        if (!is_string($subject) || !is_string($divider)) {
+            return null;
+        }
+        if ($divider === '') {
+            return null;
+        }
+
         $items = explode($divider, $subject);
 
         return array_pop($items);
@@ -254,6 +269,7 @@ class Str
         return substr($subject, 0, $pos);
     }
 
+    /** @param mixed ...$args */
     public static function getBuffer(callable $callback, ...$args): string
     {
         ob_start();
@@ -264,7 +280,7 @@ class Str
     /**
      * Join an array of items into a string using a specified conjunction.
      *
-     * @param array $enumerableItems Array of items to be enumerated
+     * @param array<array-key, mixed> $enumerableItems Array of items to be enumerated
      * @param string $conjunction Conjunction used for joining the items (default: 'and')
      *
      * @return string Joined string with enumerated items
@@ -275,7 +291,7 @@ class Str
             return '';
         }
 
-        $enumerableItems = Arr::cast($enumerableItems, 'string');
+        $enumerableItems = self::stringifyItems($enumerableItems);
         $lastItem = array_pop($enumerableItems);
 
         $result = $enumerableItems ? implode(', ', $enumerableItems) . ", $conjunction " . $lastItem : $lastItem;
@@ -285,5 +301,20 @@ class Str
         }
 
         return $result;
+    }
+
+    /**
+     * @param non-empty-array<array-key, mixed> $items
+     * @return non-empty-list<string>
+     */
+    private static function stringifyItems(array $items): array
+    {
+        $strings = [];
+        foreach ($items as $item) {
+            settype($item, 'string');
+            $strings[] = $item;
+        }
+
+        return $strings;
     }
 }

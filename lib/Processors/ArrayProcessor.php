@@ -2,20 +2,27 @@
 
 namespace PHPNomad\Utils\Processors;
 
+use InvalidArgumentException;
 use PHPNomad\Utils\Helpers\Arr;
 use ReflectionException;
 
 final class ArrayProcessor
 {
 
+    /** @var array<array-key, mixed> */
     protected array $subject = [];
     private string $separator = ',';
 
+    /** @param array<array-key, mixed> $subject */
     public function __construct(array $subject = [])
     {
         $this->subject = $subject;
     }
 
+    /**
+     * @param mixed $default
+     * @return $this
+     */
     public function pluck(string $key, $default = null)
     {
         $this->subject = Arr::pluck($this->subject, $key, $default);
@@ -24,7 +31,7 @@ final class ArrayProcessor
     }
 
     /**
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function toArray(): array
     {
@@ -48,7 +55,7 @@ final class ArrayProcessor
      */
     public function flip(): ArrayProcessor
     {
-        $this->subject = Arr::flip($this->subject);
+        $this->subject = Arr::flip($this->getFlippableSubject());
 
         return $this;
     }
@@ -98,13 +105,13 @@ final class ArrayProcessor
     /**
      * Create an array of new instances given arguments to pass
      *
-     * @param $instance string The instance to create
+     * @param class-string $instance The instance to create
      *
      * @return $this
      */
     public function hydrate(string $instance): ArrayProcessor
     {
-        $this->subject = Arr::hydrate($this->subject, $instance);
+        $this->subject = Arr::hydrate($this->getHydrationSubject(), $instance);
 
         return $this;
     }
@@ -131,14 +138,14 @@ final class ArrayProcessor
      */
     public function flatten(string $groupKey = 'group'): ArrayProcessor
     {
-        $this->subject = Arr::flatten($this->subject, $groupKey);
+        $this->subject = Arr::flatten($this->getFlattenableSubject(), $groupKey);
 
         return $this;
     }
 
     public function group(string ...$groups): ArrayProcessor
     {
-        $this->subject = Arr::group($this->subject, ...$groups);
+        $this->subject = Arr::group($this->getGroupableSubject(), ...$groups);
 
         return $this;
     }
@@ -157,7 +164,7 @@ final class ArrayProcessor
      */
     public function unique(): ArrayProcessor
     {
-        $this->subject = Arr::unique($this->subject);
+        $this->subject = Arr::unique($this->getComparableSubject());
 
         return $this;
     }
@@ -165,7 +172,7 @@ final class ArrayProcessor
     /**
      * Merges the provided arrays with the array that is being processed.
      *
-     * @param array ...$defaults
+     * @param array<array-key, mixed> ...$defaults
      *
      * @return $this
      */
@@ -179,7 +186,7 @@ final class ArrayProcessor
     /**
      * Combines arrays into a single array, with each item overriding items from the previous array.
      *
-     * @param array ...$items
+     * @param array<array-key, mixed> ...$items
      *
      * @return $this
      */
@@ -193,7 +200,7 @@ final class ArrayProcessor
     /**
      * Combines arrays into a single array, with each item overriding items from the previous array.
      *
-     * @param array ...$items
+     * @param array<array-key, mixed> ...$items
      *
      * @return $this
      */
@@ -236,8 +243,8 @@ final class ArrayProcessor
     /**
      * Recursively sorts, and optionally mutates an array of arrays.
      *
-     * @type bool $convertClosures If true, closures will be converted to an identifiable string. Default true.
-     * @type bool $recursive if true, this function will normalize recursively, manipulating sub-arrays.
+     * @param bool $convertClosures If true, closures will be converted to an identifiable string. Default true.
+     * @param bool $recursive if true, this function will normalize recursively, manipulating sub-arrays.
      *
      * @throws ReflectionException
      */
@@ -290,8 +297,8 @@ final class ArrayProcessor
     }
 
     /**
-     * @param callable $callback
-     * @param mixed $initial
+     * @param callable(array<array-key, mixed>, mixed): array<array-key, mixed> $callback
+     * @param array<array-key, mixed> $initial
      *
      * @return $this
      */
@@ -363,13 +370,16 @@ final class ArrayProcessor
     /**
      * Filters the array to only contain values contained in all provided arrays.
      *
-     * @param array ...$items
+     * @param array<array-key, scalar|\Stringable|null> ...$items
      *
      * @return static
      */
     public function intersect(array ...$items): ArrayProcessor
     {
-        $this->subject = Arr::intersect($this->subject, ...$items);
+        $this->subject = Arr::intersect(
+            $this->getComparableSubject(),
+            ...$this->getComparableArrays($items)
+        );
 
         return $this;
     }
@@ -377,7 +387,7 @@ final class ArrayProcessor
     /**
      * Filters the array to only contain values contained in all provided arrays.
      *
-     * @param array ...$items
+     * @param array<array-key, mixed> ...$items
      *
      * @return static
      */
@@ -391,13 +401,16 @@ final class ArrayProcessor
     /**
      * Filters the array to only contain values only contained in a single array.
      *
-     * @param array ...$items
+     * @param array<array-key, array<array-key, scalar|\Stringable|null>> $items
      *
      * @return static
      */
     public function diff(...$items): ArrayProcessor
     {
-        $this->subject = Arr::diff($this->subject, ...$items);
+        $this->subject = Arr::diff(
+            $this->getComparableSubject(),
+            ...$this->getComparableArrays($items)
+        );
 
         return $this;
     }
@@ -429,5 +442,112 @@ final class ArrayProcessor
     public function toString(): string
     {
         return implode($this->separator, $this->subject);
+    }
+
+    /** @return array<array-key, int|string> */
+    private function getFlippableSubject(): array
+    {
+        $subject = [];
+        foreach ($this->subject as $key => $item) {
+            if (!is_int($item) && !is_string($item)) {
+                throw new InvalidArgumentException('Flipping requires every subject item to be an integer or string.');
+            }
+            $subject[$key] = $item;
+        }
+
+        return $subject;
+    }
+
+    /** @return array<array-key, array<array-key, mixed>> */
+    private function getHydrationSubject(): array
+    {
+        $subject = [];
+        foreach ($this->subject as $key => $item) {
+            if (!is_array($item)) {
+                throw new InvalidArgumentException('Hydration requires every subject item to be an array.');
+            }
+            $subject[$key] = $item;
+        }
+
+        return $subject;
+    }
+
+    /** @return array<array-key, array<array-key, mixed>> */
+    private function getFlattenableSubject(): array
+    {
+        $subject = [];
+        foreach ($this->subject as $key => $item) {
+            if (!is_array($item)) {
+                throw new InvalidArgumentException('Flattening requires every subject item to be an array.');
+            }
+            $subject[$key] = $item;
+        }
+
+        return $subject;
+    }
+
+    /** @return array<array-key, array<array-key, mixed>|object> */
+    private function getGroupableSubject(): array
+    {
+        $subject = [];
+        foreach ($this->subject as $key => $item) {
+            if (!is_array($item) && !is_object($item)) {
+                throw new InvalidArgumentException('Grouping requires every subject item to be an array or object.');
+            }
+            $subject[$key] = $item;
+        }
+
+        return $subject;
+    }
+
+    /** @return array<array-key, scalar|\Stringable|null> */
+    private function getComparableSubject(): array
+    {
+        return $this->getComparableValues($this->subject);
+    }
+
+    /**
+     * @param array<array-key, mixed> $values
+     * @return array<array-key, scalar|\Stringable|null>
+     */
+    private function getComparableValues(array $values): array
+    {
+        $comparable = [];
+        foreach ($values as $key => $value) {
+            if (!is_scalar($value) && $value !== null && !$this->isStringableValue($value)) {
+                throw new InvalidArgumentException(
+                    'Array comparison requires every value to be scalar, null, or stringable.'
+                );
+            }
+            $comparable[$key] = $value;
+        }
+
+        return $comparable;
+    }
+
+    /**
+     * @param mixed $value
+     * @phpstan-assert-if-true \Stringable $value
+     */
+    private function isStringableValue($value): bool
+    {
+        return is_object($value) && method_exists($value, '__toString');
+    }
+
+    /**
+     * @param array<array-key, mixed> $items
+     * @return list<array<array-key, scalar|\Stringable|null>>
+     */
+    private function getComparableArrays(array $items): array
+    {
+        $comparable = [];
+        foreach ($items as $item) {
+            if (!is_array($item)) {
+                throw new InvalidArgumentException('Array comparison requires arrays of comparable values.');
+            }
+            $comparable[] = $this->getComparableValues($item);
+        }
+
+        return $comparable;
     }
 }

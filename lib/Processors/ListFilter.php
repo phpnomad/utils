@@ -2,18 +2,24 @@
 
 namespace PHPNomad\Utils\Processors;
 
+use InvalidArgumentException;
 use PHPNomad\Core\Exceptions\ItemNotFound;
 use PHPNomad\Utils\Helpers\Arr;
 use PHPNomad\Utils\Helpers\Obj;
 
+/** @phpstan-consistent-constructor */
 class ListFilter
 {
 
+    /** @var array<string, mixed> */
     protected array $filter_args = [];
+
+    /** @var array<array-key, object> */
     protected array $items;
     protected ?int $limit = null;
     protected ?int $offset = null;
 
+    /** @param array<array-key, object> $items */
     public function __construct(array $items)
     {
         $this->items = $items;
@@ -82,7 +88,7 @@ class ListFilter
     /**
      * Sets the query to only include items that are not an of the provided instances.
      *
-     * @param array $values The values to filter.
+     * @param class-string ...$values The values to filter.
      *
      * @return $this
      */
@@ -96,7 +102,7 @@ class ListFilter
     /**
      * Sets the query to only include items that are an instance of all the provided instances.
      *
-     * @param array $values The values to filter.
+     * @param class-string ...$values The values to filter.
      *
      * @return $this
      */
@@ -110,7 +116,7 @@ class ListFilter
     /**
      * Sets the query to only include items that are instance of any the provided instances.
      *
-     * @param array $values The values to filter.
+     * @param class-string ...$values The values to filter.
      *
      * @return $this
      */
@@ -139,7 +145,7 @@ class ListFilter
      * Sets the query to filter out items whose field has any of the provided values.
      *
      * @param string $field The field to check against.
-     * @param array $values The values to filter.
+     * @param scalar|\Stringable|null ...$values The values to filter.
      *
      * @return $this
      */
@@ -154,7 +160,7 @@ class ListFilter
      * Sets the query to filter out items whose field does not have all the provided values.
      *
      * @param string $field The field to check against.
-     * @param array $values The values to filter.
+     * @param scalar|\Stringable|null ...$values The values to filter.
      *
      * @return $this
      */
@@ -169,7 +175,7 @@ class ListFilter
      * Sets the query to filter out items whose field does not have any of the provided values.
      *
      * @param string $field The field to check against.
-     * @param array $values The values to filter.
+     * @param scalar|\Stringable|null ...$values The values to filter.
      *
      * @return $this
      */
@@ -185,7 +191,7 @@ class ListFilter
      * Sets the query to filter out items whose value is not identical to the provided value.
      *
      * @param string $field The field to check against.
-     * @param mixed $value The value to check.
+     * @param scalar|\Stringable|null $value The value to check.
      *
      * @return $this
      */
@@ -199,7 +205,7 @@ class ListFilter
     /**
      * Sets the query to filter out items whose key has any of the provided values.
      *
-     * @param array $values The values to filter.
+     * @param array-key ...$values The values to filter.
      *
      * @return $this
      */
@@ -213,7 +219,7 @@ class ListFilter
     /**
      * Sets the query to filter out items whose key does not have all the provided values.
      *
-     * @param array $values The values to filter.
+     * @param array-key ...$values The values to filter.
      *
      * @return $this
      */
@@ -225,9 +231,9 @@ class ListFilter
     }
 
     /**
-     * @param $key
+     * @param string $key
      *
-     * @return array
+     * @return array{field: string, type: string}
      */
     protected function prepareField($key): array
     {
@@ -272,10 +278,16 @@ class ListFilter
             }
 
             if ($type === 'callback') {
+                if (!is_callable($arg)) {
+                    throw new InvalidArgumentException("Filter '$key' must contain a callable value.");
+                }
                 $valid = $arg($value);
             } else {
 
-                $fields = Arr::intersect(Arr::wrap($arg), Arr::wrap($value));
+                $fields = Arr::intersect(
+                    $this->getComparableValues(Arr::wrap($arg), $key),
+                    $this->getComparableValues(Arr::wrap($value), $key)
+                );
 
                 switch ($type) {
                     case 'not_in':
@@ -285,6 +297,9 @@ class ListFilter
                         $valid = !empty($fields);
                         break;
                     case 'and':
+                        if (!is_array($arg)) {
+                            throw new InvalidArgumentException("Filter '$key' must contain an array of values.");
+                        }
                         $valid = count($fields) === count($arg);
                         break;
                     case 'equals':
@@ -321,7 +336,7 @@ class ListFilter
     /**
      * Pre-filters the list of items.
      *
-     * @return array
+     * @return array<array-key, array-key>
      */
     protected function filterItemKeys(): array
     {
@@ -329,12 +344,20 @@ class ListFilter
 
         // Filter out keys, if keys are specified
         if (isset($this->filter_args['filter_enum_key__in'])) {
-            $items = Arr::intersect($items, $this->filter_args['filter_enum_key__in']);
+            $includedKeys = $this->filter_args['filter_enum_key__in'];
+            if (!$this->isArrayOfKeys($includedKeys)) {
+                throw new InvalidArgumentException('Key inclusion filters must contain an array of integer or string keys.');
+            }
+            $items = $this->keepMatchingKeys($items, $includedKeys);
             unset($this->filter_args['filter_enum_key__in']);
         }
 
         if (isset($this->filter_args['filter_enum_key__not_in'])) {
-            $items = Arr::diff($items, $this->filter_args['filter_enum_key__not_in']);
+            $excludedKeys = $this->filter_args['filter_enum_key__not_in'];
+            if (!$this->isArrayOfKeys($excludedKeys)) {
+                throw new InvalidArgumentException('Key exclusion filters must contain an array of integer or string keys.');
+            }
+            $items = $this->removeMatchingKeys($items, $excludedKeys);
             unset($this->filter_args['filter_enum_key__not_in']);
         }
 
@@ -342,17 +365,93 @@ class ListFilter
     }
 
     /**
+     * @param mixed $value
+     * @phpstan-assert-if-true array<array-key, array-key> $value
+     */
+    private function isArrayOfKeys($value): bool
+    {
+        if (!is_array($value)) {
+            return false;
+        }
+
+        foreach ($value as $item) {
+            if (!is_int($item) && !is_string($item)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @param array<array-key, array-key> $items
+     * @param array<array-key, array-key> $includedKeys
+     * @return array<array-key, array-key>
+     */
+    private function keepMatchingKeys(array $items, array $includedKeys): array
+    {
+        $result = [];
+        foreach (Arr::intersect($items, $includedKeys) as $key => $item) {
+            $result[$key] = $item;
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param array<array-key, array-key> $items
+     * @param array<array-key, array-key> $excludedKeys
+     * @return array<array-key, array-key>
+     */
+    private function removeMatchingKeys(array $items, array $excludedKeys): array
+    {
+        $result = [];
+        foreach (Arr::diff($items, $excludedKeys) as $key => $item) {
+            $result[$key] = $item;
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param array<array-key, mixed> $values
+     * @return array<array-key, scalar|\Stringable|null>
+     */
+    private function getComparableValues(array $values, string $filter): array
+    {
+        $comparable = [];
+        foreach ($values as $key => $value) {
+            if (!is_scalar($value) && $value !== null && !$this->isStringableValue($value)) {
+                throw new InvalidArgumentException(
+                    "Filter '$filter' must contain only scalar, null, or stringable values."
+                );
+            }
+            $comparable[$key] = $value;
+        }
+
+        return $comparable;
+    }
+
+    /**
+     * @param mixed $value
+     * @phpstan-assert-if-true \Stringable $value
+     */
+    private function isStringableValue($value): bool
+    {
+        return is_object($value) && method_exists($value, '__toString');
+    }
+
+    /**
      * Queries a loader registry.
      *
-     * @return object[] Array of registry items.
+     * @return array<array-key, object> Array of registry items.
      */
     public function filter(): array
     {
         $results = [];
-        $actualLimit = $this->limit ?? 0 + $this->offset ?? 0;
-
-        if(!$actualLimit){
-            $actualLimit = null;
+        $actualLimit = null;
+        if ($this->limit !== null) {
+            $actualLimit = $this->limit + ($this->offset ?? 0);
         }
 
         foreach ($this->filterItemKeys() as $item_key) {
@@ -366,13 +465,13 @@ class ListFilter
                 $results[$item_key] = $item;
             }
 
-            if($actualLimit === count($results)){
+            if ($actualLimit !== null && $actualLimit === count($results)) {
                 break;
             }
         }
 
-        if(!is_null($this->offset)){
-            $results = Arr::after($results, $this->offset - 1);
+        if ($this->offset !== null) {
+            $results = Arr::after($results, $this->offset);
         }
 
         return $results;
@@ -381,35 +480,49 @@ class ListFilter
     /**
      * Stops after reaching the specified number of results.
      *
-     * @param ?positive-int $limit
+     * @param int|null $limit Must be positive when provided.
      * @return $this
+     * @throws InvalidArgumentException
      */
     public function limit(?int $limit = null)
     {
+        if ($limit !== null && $limit < 1) {
+            throw new InvalidArgumentException('Limit must be null or a positive integer.');
+        }
+
         $this->limit = $limit;
 
         return $this;
     }
 
     /**
-     * @param int|null $offset
+     * @param int|null $offset Must not be negative when provided.
      * @return $this
+     * @throws InvalidArgumentException
      */
     public function offset(?int $offset = null)
     {
+        if ($offset !== null && $offset < 0) {
+            throw new InvalidArgumentException('Offset must be null or a non-negative integer.');
+        }
+
         $this->offset = $offset;
 
         return $this;
     }
 
     /**
-     * @return array
+     * @return array<string, mixed>
      */
     public function getFilterArgs(): array
     {
         return $this->filter_args;
     }
 
+    /**
+     * @param array<string, mixed> $filterArgs
+     * @param array<array-key, object> $inputData
+     */
     public static function seed(array $filterArgs, array $inputData): ListFilter
     {
         $new = new static($inputData);

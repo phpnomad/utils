@@ -19,7 +19,7 @@ class Num
      *
      * @param numeric $amount
      * @param numeric $dividedBy
-     * @param int $mode
+     * @param 1|2|3|4 $mode
      * @return int
      */
     public static function getDividedInt($amount, $dividedBy, int $mode = PHP_ROUND_HALF_UP): int
@@ -29,6 +29,7 @@ class Num
         return static::floatToInt($product, $mode);
     }
 
+    /** @param 1|2|3|4 $mode */
     public static function floatToInt(float $input, int $mode = PHP_ROUND_HALF_UP): int
     {
         return (int) round($input, 0, $mode);

@@ -24,3 +24,10 @@ nodejs
 npm
 fediverse
 readme
+chainable
+getter
+lookups
+PHPNomad
+phpnomad
+txt
+utils

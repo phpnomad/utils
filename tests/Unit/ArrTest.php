@@ -52,13 +52,25 @@ class ArrTest extends TestCase
         $first = ['settings' => ['color' => 'blue', 'size' => 'm'], 'enabled' => true];
         $second = ['settings' => ['color' => 'red']];
 
+        if (PHP_VERSION_ID >= 80000) {
+            $replace = eval(
+                'return \\PHPNomad\\Utils\\Helpers\\Arr::replace(first: $first, second: $second);'
+            );
+            $replaceRecursive = eval(
+                'return \\PHPNomad\\Utils\\Helpers\\Arr::replaceRecursive(first: $first, second: $second);'
+            );
+        } else {
+            $replace = Arr::replace($first, $second);
+            $replaceRecursive = Arr::replaceRecursive($first, $second);
+        }
+
         $this->assertSame(
             ['settings' => ['color' => 'red'], 'enabled' => true],
-            Arr::replace(first: $first, second: $second)
+            $replace
         );
         $this->assertSame(
             ['settings' => ['color' => 'red', 'size' => 'm'], 'enabled' => true],
-            Arr::replaceRecursive(first: $first, second: $second)
+            $replaceRecursive
         );
     }
 

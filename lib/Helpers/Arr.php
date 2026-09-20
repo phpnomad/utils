@@ -129,14 +129,15 @@ class Arr
     /**
      * Retrieve items before the specified array position.
      *
-     * @param array<array-key, mixed> $subject the array
+     * @template TValue
+     * @param array<array-key, TValue> $subject the array
      * @param int $position The position to retrieve before
      *
-     * @return array<array-key, mixed>
+     * @return array<array-key, TValue>
      */
     public static function before(array $subject, int $position): array
     {
-        return Arr::diff(Arr::after($subject, $position), $subject);
+        return array_slice($subject, 0, $position);
     }
 
     /**
